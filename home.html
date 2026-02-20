@@ -15,31 +15,30 @@
         .scan-frame { position: absolute; inset: 0; margin: auto; width: 250px; height: 250px; border: 4px solid #137fec; border-radius: 40px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.5); }
         .btn-locked { opacity: 0.15 !important; pointer-events: none !important; filter: grayscale(1) !important; cursor: not-allowed !important; }
         .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; backdrop-blur: 8px; align-items: center; justify-content: center; }
-        #receiptModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 600; backdrop-filter: blur(10px); align-items: center; justify-content: center; }
-        .receipt-paper { background: white; width: 85%; max-width: 320px; border-radius: 30px; padding: 25px; position: relative; }
-        .thursday-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        #detailsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 600; backdrop-filter: blur(10px); align-items: center; justify-content: center; }
+        .details-paper { background: white; width: 85%; max-width: 320px; border-radius: 35px; padding: 25px; position: relative; border: 2px solid #f1f5f9; }
     </style>
 </head>
 <body class="bg-[#f6f7f8] text-slate-800 min-h-screen pb-24 text-right italic font-bold">
 
-    <div id="receiptModal">
-        <div class="receipt-paper shadow-2xl space-y-4 text-right">
+    <div id="detailsModal">
+        <div class="details-paper shadow-2xl space-y-4 text-right">
             <div class="text-center border-b border-dashed border-slate-200 pb-4">
-                <p class="text-[10px] text-blue-600 font-black uppercase">نور للإضاءة الحديثة</p>
-                <h3 class="text-lg font-black italic">تفاصيل راتب الأسبوع</h3>
-                <p id="receiptDate" class="text-xs text-slate-400 italic"></p>
+                <span class="material-icons text-blue-600 text-3xl">payments</span>
+                <h3 class="text-lg font-black italic">كشف الراتب المفصل</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">شركة نور للإضاءة الحديثة</p>
             </div>
-            <div id="receiptContent" class="space-y-3 py-2 italic font-bold">
+            <div class="space-y-3 py-2 italic font-black text-sm">
+                <div class="flex justify-between border-b border-slate-50 pb-2"><span>الراتب الأساسي:</span><span id="mBase">0 ج.م</span></div>
+                <div class="flex justify-between text-orange-600"><span>السلف:</span><span id="mLoan">0 ج.م</span></div>
+                <div class="flex justify-between text-blue-500"><span>التأمينات:</span><span id="mIns">0 ج.م</span></div>
+                <div class="flex justify-between text-red-400"><span>أيام الغياب:</span><span id="mAbs">0 يوم</span></div>
+                <div class="flex justify-between text-red-600"><span>الجزاءات:</span><span id="mPen">0 ج.م</span></div>
+                <div class="flex justify-between text-emerald-600 pt-2 border-t border-slate-100 text-lg">
+                    <span>الإجمالي المستلم:</span><span id="mTotal">0 ج.م</span>
                 </div>
-            <button onclick="closeReceipt()" class="w-full bg-[#137fec] text-white py-4 rounded-2xl font-black shadow-lg">إغلاق</button>
-        </div>
-    </div>
-
-    <div id="salaryHistoryModal" class="modal-overlay">
-        <div class="bg-white w-[90%] max-w-sm rounded-[2.5rem] p-6 shadow-2xl space-y-4 text-right">
-            <h3 class="text-center text-[#137fec] font-black text-lg">سجل القبض (أيام الخميس)</h3>
-            <div id="thursdayList" class="max-h-64 overflow-y-auto space-y-3 p-1"></div>
-            <button onclick="document.getElementById('salaryHistoryModal').style.display='none'" class="w-full bg-slate-100 py-3 rounded-2xl font-black text-slate-400 mt-2">رجوع</button>
+            </div>
+            <button onclick="document.getElementById('detailsModal').style.display='none'" class="w-full bg-[#137fec] text-white py-4 rounded-2xl font-black shadow-lg active:scale-95 transition-all">فهمت</button>
         </div>
     </div>
 
@@ -51,65 +50,67 @@
 
     <header class="bg-white px-6 pt-12 pb-6 border-b border-blue-50 sticky top-0 z-50">
         <div class="flex items-center justify-between max-w-md mx-auto">
-            <button onclick="logout()" class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center border border-red-100 text-red-500"><span class="material-icons">logout</span></button>
-            <div class="flex items-center gap-3">
-                <div class="text-right">
-                    <p class="text-[10px] text-[#137fec] font-bold italic uppercase mb-1 text-center">نور للإضاءة الحديثة</p>
-                    <h1 id="welcomeName" class="text-xl font-black text-slate-900 italic leading-none">أهلاً بكِ</h1>
+            <button onclick="logout()" class="w-12 h-12 bg-red-50 rounded-2xl flex items-center justify-center border border-red-100 text-red-500 active:scale-90"><span class="material-icons">logout</span></button>
+            <div class="flex items-center gap-3 text-right">
+                <div>
+                    <p class="text-[10px] text-[#137fec] font-bold italic uppercase leading-none mb-1 text-center">نور للإضاءة الحديثة</p>
+                    <h1 id="welcomeName" class="text-xl font-black text-slate-900 italic leading-none">أهلاً بك</h1>
                 </div>
-                <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border-2 border-blue-100 overflow-hidden text-[#137fec]"><span class="material-icons text-2xl">person</span></div>
+                <div class="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center border-2 border-blue-100 text-[#137fec]"><span class="material-icons text-2xl">person</span></div>
             </div>
         </div>
     </header>
 
     <main class="p-4 space-y-6 max-w-md mx-auto text-right">
+        
         <section class="space-y-3">
             <h2 class="text-lg font-bold px-2 flex items-center gap-2 text-slate-700 italic"><span class="material-icons text-[#137fec]">qr_code_scanner</span> الحضور والانصراف</h2>
             <div class="grid grid-cols-2 gap-4">
-                <button onclick="openScanner('حضور')" class="bg-[#137fec] text-white p-5 rounded-2xl shadow-lg flex flex-col items-center gap-2 uppercase italic font-bold"><span class="material-icons text-3xl">qr_code_scanner</span> تسجيل حضور</button>
-                <button onclick="openScanner('انصراف')" class="bg-white border-2 border-blue-100 text-[#137fec] p-5 rounded-2xl btn-locked flex flex-col items-center gap-2 uppercase italic font-bold"><span class="material-icons text-3xl">lock</span> تسجيل انصراف</button>
+                <button onclick="openScanner('حضور')" class="bg-[#137fec] text-white p-5 rounded-2xl shadow-lg flex flex-col items-center gap-2 italic font-bold"><span class="material-icons text-3xl">qr_code_scanner</span> تسجيل حضور</button>
+                <button id="checkOutBtn" onclick="openScanner('انصراف')" class="bg-white border-2 border-blue-100 text-[#137fec] p-5 rounded-2xl btn-locked flex flex-col items-center gap-2 italic font-bold"><span class="material-icons text-3xl">lock</span> تسجيل انصراف</button>
             </div>
         </section>
 
-        <section class="bg-white p-6 rounded-[2.5rem] ios-shadow border border-blue-50 text-center relative">
-            <div class="flex items-center justify-between mb-4 px-2">
-                <h2 class="text-lg font-bold text-slate-700 italic uppercase">الراتب الأسبوعي</h2>
-                <button onclick="openSalaryHistory()" class="w-10 h-10 bg-orange-50 text-orange-500 rounded-xl flex items-center justify-center shadow-sm"><span class="material-icons">calendar_month</span></button>
+        <section class="bg-white p-6 rounded-[2.5rem] ios-shadow border border-blue-50 text-center">
+            <div class="flex items-center justify-between mb-2 px-2">
+                <h2 class="text-lg font-bold text-slate-700 italic uppercase leading-none">الراتب الأسبوعي</h2>
+                <span class="text-[10px] bg-blue-50 text-[#137fec] px-3 py-1 rounded-full font-bold">2026</span>
             </div>
-            <div onclick="showCurrentReceipt()" class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner cursor-pointer active:scale-95 transition-all">
-                <p id="netSalaryText" class="text-3xl font-black text-slate-900 italic">0 <span class="text-sm font-medium">ج.م</span></p>
+            <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
+                <p id="netSalaryText" class="text-3xl font-black text-slate-900 italic mb-2">0 <span class="text-sm">ج.م</span></p>
+                <button onclick="showDetails()" class="bg-white text-[#137fec] px-6 py-2 rounded-full border border-blue-100 text-[10px] font-black shadow-sm active:scale-90 transition-all">اضغط للتفاصيل</button>
             </div>
         </section>
 
         <section class="grid grid-cols-4 gap-2 text-center font-black italic">
-            <div class="bg-white p-3 rounded-2xl border border-blue-50 shadow-sm"><span class="material-icons text-blue-500 text-lg mb-1">verified_user</span><p id="insuranceText" class="text-[8px]">التأمينات<br>0 ج.م</p></div>
-            <div class="bg-white p-3 rounded-2xl border border-orange-50 shadow-sm cursor-pointer" onclick="window.location.href='loans_report.html'"><span class="material-icons text-orange-500 text-lg mb-1">wallet</span><p id="loansText" class="text-[8px] text-orange-600">السلف<br>0 ج.م</p></div>
-            <div class="bg-white p-3 rounded-2xl border border-emerald-50 shadow-sm"><span class="material-icons text-green-500 text-lg mb-1">redeem</span><p id="bonusText" class="text-[8px] text-emerald-600">الحوافز<br>0 ج.م</p></div>
-            <div class="bg-white p-3 rounded-2xl border border-red-50 shadow-sm" onclick="window.location.href='penalties_report.html'"><span class="material-icons text-red-500 text-lg mb-1">gavel</span><p id="penaltyText" class="text-[8px] text-red-600">الجزاءات<br>0 ج.م</p></div>
+            <div class="bg-white p-3 rounded-2xl border border-blue-50 shadow-sm"><span class="material-icons text-blue-500 text-lg">verified_user</span><p id="insuranceText" class="text-[8px]">التأمينات<br>0</p></div>
+            <div class="bg-white p-3 rounded-2xl border border-orange-50 shadow-sm" onclick="window.location.href='loans_report.html'"><span class="material-icons text-orange-500 text-lg">wallet</span><p id="loansText" class="text-[8px] text-orange-600">السلف<br>0</p></div>
+            <div class="bg-white p-3 rounded-2xl border border-emerald-50 shadow-sm"><span class="material-icons text-green-500 text-lg">redeem</span><p id="bonusText" class="text-[8px] text-emerald-600">الحوافز<br>0</p></div>
+            <div class="bg-white p-3 rounded-2xl border border-red-50 shadow-sm" onclick="window.location.href='penalties_report.html'"><span class="material-icons text-red-500 text-lg">gavel</span><p id="penaltyText" class="text-[8px] text-red-600">الجزاءات<br>0</p></div>
         </section>
 
         <section class="space-y-3">
             <h2 class="text-lg font-bold px-2 text-slate-700 italic uppercase">الطلبات والإجازات</h2>
             <div class="bg-white p-5 rounded-[2rem] border border-blue-50 flex items-center justify-between cursor-pointer">
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 text-right">
                     <div class="w-10 h-10 bg-blue-50 text-[#137fec] rounded-xl flex items-center justify-center"><span class="material-icons">event_busy</span></div>
-                    <div><p class="font-bold text-sm italic">الإجازات السنوية</p><p class="text-[10px] text-slate-500 italic">رصيد الـ <span id="vacaBalanceDisplay">21</span> يوم</p></div>
+                    <div><p class="font-bold text-sm italic">الإجازات السنوية</p><p class="text-[10px] text-slate-500 italic mt-1">رصيد الـ <span id="vacaBalanceDisplay">21</span> يوم</p></div>
                 </div>
-                <span class="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold uppercase">تفاصيل</span>
+                <span class="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold">تفاصيل</span>
             </div>
             <div class="grid grid-cols-2 gap-3 mt-2">
-                <button onclick="window.location.href='request_vacation.html'" class="bg-blue-50 text-[#137fec] py-4 rounded-2xl font-bold border border-blue-100 text-[10px] italic uppercase">طلب إجازة</button>
-                <button onclick="window.location.href='request_loan.html'" class="bg-blue-50 text-[#137fec] py-4 rounded-2xl font-bold border border-blue-100 text-[10px] italic uppercase">طلب سلفة</button>
+                <button onclick="window.location.href='request_vacation.html'" class="bg-blue-50 text-[#137fec] py-4 rounded-2xl font-bold border border-blue-100 text-[10px] italic">طلب إجازة</button>
+                <button onclick="window.location.href='request_loan.html'" class="bg-blue-50 text-[#137fec] py-4 rounded-2xl font-bold border border-blue-100 text-[10px] italic">طلب سلفة</button>
             </div>
         </section>
 
         <section class="pt-4">
-            <a href="guidelines.html" class="flex items-center justify-between bg-gradient-to-l from-[#137fec] to-blue-600 p-6 rounded-[2.5rem] text-white shadow-lg no-underline active:scale-95 transition-all">
+            <a href="guidelines.html" class="flex items-center justify-between bg-gradient-to-l from-[#137fec] to-blue-600 p-6 rounded-[2.5rem] text-white shadow-lg no-underline active:scale-95 transition-all text-right">
                 <div class="flex items-center gap-4 text-white">
                     <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center"><span class="material-icons text-2xl text-white">menu_book</span></div>
-                    <div class="text-right text-white">
-                        <h3 class="font-bold text-lg italic uppercase leading-tight">دليل شركة نور</h3>
-                        <p class="text-xs text-white/80 italic font-bold">لوائح العمل والسلامة</p>
+                    <div class="text-right">
+                        <h3 class="font-bold text-lg italic uppercase leading-tight text-white">دليل شركة نور</h3>
+                        <p class="text-xs text-white/80 italic font-bold leading-none">لوائح العمل والسلامة</p>
                     </div>
                 </div>
                 <span class="material-icons text-white">arrow_back</span>
@@ -119,16 +120,24 @@
         <footer class="pt-8 pb-4 text-center border-t border-slate-100"><p class="text-slate-400 text-[10px] font-bold uppercase italic">تطوير: مروه سمير حسن - 2026</p></footer>
     </main>
 
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 px-8 py-4 pb-8 flex items-center justify-between z-50">
+        <button onclick="window.location.href='home.html'" class="flex flex-col items-center gap-1 text-[#137fec]"><span class="material-icons">dashboard</span><span class="text-[10px] font-bold italic">الرئيسية</span></button>
+        <button onclick="showQuickHistory()" class="flex flex-col items-center gap-1 text-slate-400"><span class="material-icons">history</span><span class="text-[10px] font-bold italic">السجل</span></button>
+        <button class="flex flex-col items-center gap-1 text-slate-400"><span class="material-icons">notifications</span><span class="text-[10px] font-bold italic">تنبيهات</span></button>
+    </nav>
+
     <script>
-        window.onload = function() { loadUserData(); generateThursdayCalendar(); };
+        window.onload = function() { loadUserData(); };
 
         function loadUserData() {
             const name = localStorage.getItem('logged_in_employee_name') || "مروه سمير";
-            document.getElementById('welcomeName').innerText = "أهلاً بكِ، " + name;
+            document.getElementById('welcomeName').innerText = "أهلاً بك، " + name;
             const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
             const me = employees.find(e => e.name === name) || {};
-            const net = (me.baseSalary||0) + (me.bonuses||0) - (me.loans||0) - (me.penalties||0);
-            document.getElementById('netSalaryText').innerHTML = net.toLocaleString() + " <span class='text-sm font-medium'>ج.م</span>";
+            
+            const net = (me.baseSalary||0) + (me.bonuses||0) - (me.loans||0) - (me.penalties||0) - (me.insurance||0);
+            document.getElementById('netSalaryText').innerHTML = net.toLocaleString() + " <span class='text-sm'>ج.م</span>";
+            
             document.getElementById('insuranceText').innerHTML = `التأمينات<br>${me.insurance||0} ج.م`;
             document.getElementById('loansText').innerHTML = `السلف<br>${me.loans||0} ج.م`;
             document.getElementById('bonusText').innerHTML = `الحوافز<br>${me.bonuses||0} ج.م`;
@@ -136,51 +145,37 @@
             document.getElementById('vacaBalanceDisplay').innerText = me.vacationBalance || 21;
         }
 
-        function showCurrentReceipt() {
+        function showDetails() {
             const name = localStorage.getItem('logged_in_employee_name');
             const me = (JSON.parse(localStorage.getItem('nour_employees')) || []).find(e => e.name === name) || {};
-            document.getElementById('receiptDate').innerText = "أسبوع: " + new Date().toLocaleDateString('ar-EG', {month:'long', day:'numeric'});
-            document.getElementById('receiptContent').innerHTML = `
-                <div class="flex justify-between text-sm"><span>الراتب الأساسي:</span><span>${me.baseSalary||0} ج.م</span></div>
-                <div class="flex justify-between text-sm text-emerald-600"><span>حوافز/إضافي:</span><span>+${me.bonuses||0} ج.م</span></div>
-                <div class="flex justify-between text-sm text-red-500"><span>سلف مستقطعة:</span><span>-${me.loans||0} ج.م</span></div>
-                <div class="flex justify-between text-sm text-red-500"><span>جزاءات:</span><span>-${me.penalties||0} ج.م</span></div>`;
-            const total = (me.baseSalary||0) + (me.bonuses||0) - (me.loans||0) - (me.penalties||0);
-            document.getElementById('rTotal').innerText = total.toLocaleString() + " ج.م";
-            document.getElementById('receiptModal').style.display = 'flex';
+            
+            document.getElementById('mBase').innerText = (me.baseSalary||0).toLocaleString() + " ج.م";
+            document.getElementById('mLoan').innerText = (me.loans||0).toLocaleString() + " ج.م";
+            document.getElementById('mIns').innerText = (me.insurance||0).toLocaleString() + " ج.م";
+            document.getElementById('mAbs').innerText = (me.absentDays||0) + " يوم";
+            document.getElementById('mPen').innerText = (me.penalties||0).toLocaleString() + " ج.م";
+            
+            const total = (me.baseSalary||0) + (me.bonuses||0) - (me.loans||0) - (me.penalties||0) - (me.insurance||0);
+            document.getElementById('mTotal').innerText = total.toLocaleString() + " ج.م";
+            
+            document.getElementById('detailsModal').style.display = 'flex';
         }
 
-        function generateThursdayCalendar() {
-            const list = document.getElementById('thursdayList');
-            const thursdays = ["5 فبراير", "12 فبراير", "19 فبراير", "26 فبراير"];
-            list.innerHTML = thursdays.map(date => `
-                <div class="thursday-card shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center"><span class="material-icons text-sm">check</span></div>
-                        <div><p class="text-sm font-bold text-slate-800 italic">خميس ${date}</p><p class="text-[9px] text-slate-400 italic">✅ تم القبض</p></div>
-                    </div>
-                    <span class="material-icons text-slate-300">chevron_left</span>
-                </div>`).join('');
-        }
-
-        function openSalaryHistory() { document.getElementById('salaryHistoryModal').style.display = 'flex'; }
-        function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
         async function openScanner(type) {
-            const overlay = document.getElementById('qr-overlay');
-            overlay.style.display = 'block';
+            const overlay = document.getElementById('qr-overlay'); overlay.style.display = 'block';
             const video = document.getElementById('video');
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
                 video.srcObject = stream;
                 setTimeout(() => {
                     alert(`تم تسجيل ${type} بنجاح في شركة نور ✅`);
-                    stream.getTracks().forEach(t => t.stop());
-                    location.reload();
+                    stream.getTracks().forEach(t => t.stop()); location.reload();
                 }, 2000);
             } catch (err) { alert("فعل الكاميرا!"); overlay.style.display = 'none'; }
         }
         function closeScanner() { document.getElementById('qr-overlay').style.display = 'none'; }
         function logout() { localStorage.removeItem('logged_in_employee_name'); window.location.href='index.html'; }
+        function showQuickHistory() { alert("جاري تجهيز سجل النشاط..."); }
     </script>
 </body>
 </html>
