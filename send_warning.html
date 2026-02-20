@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>إرسال إنذار رسمي - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .warning-card { background: white; border-radius: 2.5rem; padding: 2rem; border: 1px solid #fee2e2; position: relative; }
+        .warning-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: #ef4444; border-radius: 2.5rem 2.5rem 0 0; }
+        .input-box { background: #fffaf8; border: 2px solid #fee2e2; border-radius: 1.2rem; padding: 15px; width: 100%; font-weight: 700; font-size: 14px; outline: none; transition: 0.3s; }
+        .input-box:focus { border-color: #ef4444; background: white; }
+    </style>
+</head>
+<body class="p-4 pb-24 text-right italic font-bold">
+
+    <header class="max-w-md mx-auto flex items-center justify-between mb-8">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-11 h-11 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100 active:scale-90 transition-all">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <div class="text-center">
+            <h1 class="text-xl font-black text-slate-800 italic uppercase">إرسال إنذار رسمي</h1>
+            <p class="text-[10px] text-red-500 font-bold uppercase italic">الإدارة القانونية - مروة سمير</p>
+        </div>
+        <div class="w-11 h-11 flex items-center justify-center text-red-100">
+            <span class="material-icons-round text-3xl animate-pulse">report_problem</span>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto space-y-6">
+        <div class="warning-card shadow-2xl shadow-red-900/5 space-y-6">
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[11px] font-black text-slate-400 mr-2 mb-2 block italic uppercase">الموظف المخالف:</label>
+                    <input id="empInput" list="employeesList" placeholder="ابدأ بكتابة اسم الموظف..." class="input-box border-red-50">
+                    <datalist id="employeesList"></datalist>
+                </div>
+
+                <div>
+                    <label class="text-[11px] font-black text-slate-400 mr-2 mb-2 block italic uppercase">تاريخ المخالفة:</label>
+                    <input id="warnDate" type="date" class="input-box text-slate-500">
+                </div>
+
+                <div>
+                    <label class="text-[11px] font-black text-slate-400 mr-2 mb-2 block italic uppercase">نص الإنذار (سيظهر في أبلكيشن الموظف):</label>
+                    <textarea id="warnMessage" placeholder="اكتب تفاصيل المخالفة هنا..." class="input-box h-40 text-right"></textarea>
+                </div>
+            </div>
+
+            <button onclick="sendWarning()" class="w-full bg-red-600 text-white py-5 rounded-[1.8rem] font-black text-sm shadow-xl shadow-red-200 active:scale-95 transition-all italic flex items-center justify-center gap-3">
+                <span class="material-icons-round">notification_important</span>
+                إرسال الإنذار فوراً
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // تحميل الموظفين بمجرد فتح الصفحة لربط الأسماء الحقيقية
+        window.onload = function() {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const list = document.getElementById('employeesList');
+            list.innerHTML = employees.map(emp => `<option value="${emp.name}">`).join('');
+            document.getElementById('warnDate').value = new Date().toISOString().split('T')[0];
+        };
+
+        function sendWarning() {
+            const name = document.getElementById('empInput').value.trim();
+            const message = document.getElementById('warnMessage').value.trim();
+            const date = document.getElementById('warnDate').value;
+
+            if (!name || !message) {
+                alert("يا مروة، لازم تختاري الموظف وتكتبي سبب الإنذار!");
+                return;
+            }
+
+            // ١. البحث عن الموظف في قاعدة البيانات
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const empIdx = employees.findIndex(e => e.name === name);
+
+            if (empIdx !== -1) {
+                // ٢. إضافة الإنذار لملف الموظف (للملفات الإدارية)
+                if (!employees[empIdx].warnings) employees[empIdx].warnings = [];
+                employees[empIdx].warnings.push({ date, message });
+                localStorage.setItem('nour_employees', JSON.stringify(employees));
+
+                // ٣. إرسال "إشعار" يظهر فوراً في أبلكيشن الموظف
+                let notifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+                notifs.push({
+                    to: name,
+                    title: "⚠️ إنذار إداري رسمي",
+                    message: message,
+                    date: date,
+                    type: 'warning',
+                    read: false
+                });
+                localStorage.setItem('nour_notifications', JSON.stringify(notifs));
+
+                alert(`تم إرسال الإنذار للموظف ${name} بنجاح، وظهر في الأبلكيشن بتاعه الآن.`);
+                
+                // تنظيف الصفحة بعد الإرسال
+                document.getElementById('empInput').value = "";
+                document.getElementById('warnMessage').value = "";
+            } else {
+                alert("يا مروة، الاسم ده مش موجود في قائمة الموظفين، تأكدي من الاختيار من القائمة!");
+            }
+        }
+    </script>
+</body>
+</html>

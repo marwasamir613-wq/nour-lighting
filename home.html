@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>لوحة تحكم الموظف - نور للمودرن لايتينج</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .ios-shadow { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05); }
+        #qr-overlay { display: none; position: fixed; inset: 0; background: black; z-index: 100; }
+        video { width: 100%; height: 100%; object-fit: cover; }
+        .scan-frame { position: absolute; inset: 0; margin: auto; width: 250px; height: 250px; border: 4px solid #137fec; border-radius: 40px; box-shadow: 0 0 0 4000px rgba(0,0,0,0.5); }
+        .btn-locked { opacity: 0.15 !important; pointer-events: none !important; filter: grayscale(1) !important; cursor: not-allowed !important; }
+        .notif-badge { position: absolute; top: -2px; right: -2px; background: #ef4444; color: white; font-size: 8px; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid white; font-weight: 900; }
+        
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; backdrop-blur: 8px; align-items: center; justify-content: center; }
+        .vaca-circle { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; border: 1px solid #e2e8f0; transition: 0.3s; flex-direction: column; }
+        .vaca-used { background: #fee2e2; color: #ef4444; text-decoration: line-through; border-color: #ef4444; }
+        .thursday-card { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: 0.2s; }
+        
+        #receiptModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 300; backdrop-blur: 10px; align-items: center; justify-content: center; }
+        .receipt-paper { background: white; width: 85%; max-width: 320px; border-radius: 30px; padding: 25px; position: relative; }
+        
+        #quickHistoryPopup { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+
+        /* ستايل نافذة التنبيهات الجديدة */
+        #notificationsModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 500; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+    </style>
+</head>
+<body class="bg-[#f6f7f8] text-slate-800 min-h-screen pb-24 text-right italic font-bold">
+
+    <div id="notificationsModal" onclick="this.style.display='none'">
+        <div class="bg-white w-80 rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4" onclick="event.stopPropagation()">
+            <span class="material-icons text-5xl text-orange-500">notifications_active</span>
+            <h3 class="text-xl font-black italic">إشعارات الإدارة</h3>
+            <div id="notificationsList" class="max-h-60 overflow-y-auto space-y-3 p-2 text-right">
+                </div>
+            <button onclick="document.getElementById('notificationsModal').style.display='none'" class="w-full bg-[#137fec] text-white py-4 rounded-2xl font-black shadow-lg">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="quickHistoryPopup" onclick="this.style.display='none'">
+        <div class="bg-white w-80 rounded-[2.5rem] p-8 shadow-2xl text-center space-y-4" onclick="event.stopPropagation()">
+            <span class="material-icons text-5xl text-[#137fec]">history</span>
+            <h3 class="text-xl font-black italic">آخر نشاط مسجل</h3>
+            <div id="lastLogContent" class="bg-slate-50 p-4 rounded-2xl border border-blue-100 italic"></div>
+            <button onclick="document.getElementById('quickHistoryPopup').style.display='none'" class="w-full bg-[#137fec] text-white py-4 rounded-2xl font-black">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="receiptModal">
+        <div class="receipt-paper shadow-2xl space-y-4 text-right">
+            <div class="text-center border-b border-dashed border-slate-200 pb-4">
+                <p class="text-[10px] text-blue-600 font-black">نور للإضاءة الحديثة</p>
+                <h3 class="text-lg font-black italic">تفاصيل راتب الأسبوع</h3>
+                <p id="receiptDate" class="text-xs text-slate-400 italic"></p>
+            </div>
+            <div class="space-y-3 py-2">
+                <div class="flex justify-between text-sm italic"><span>الأساسي:</span><span id="rBase">0 ج.م</span></div>
+                <div class="flex justify-between text-sm italic text-emerald-600"><span>حوافز:</span><span id="rBonus">+0 ج.م</span></div>
+                <div class="flex justify-between text-sm italic text-red-500"><span>سلف:</span><span id="rLoan">-0 ج.م</span></div>
+                <div class="flex justify-between text-sm italic text-red-500"><span>جزاءات:</span><span id="rPenalty">-0 ج.م</span></div>
+            </div>
+            <div class="bg-slate-50 p-4 rounded-2xl text-center border border-slate-100 italic font-black">
+                <p id="rTotal" class="text-2xl text-slate-900">0 ج.م</p>
+            </div>
+            <button onclick="closeReceipt()" class="w-full bg-[#137fec] text-white py-4 rounded-2xl font-black shadow-lg">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="salaryHistoryModal" class="modal-overlay">
+        <div class="bg-white w-[90%] max-w-sm rounded-[2.5rem] p-6 shadow-2xl space-y-4 text-right">
+            <h3 class="text-center text-[#137fec] font-black text-lg">سجل القبض</h3>
+            <select id="monthSelect" onchange="generateThursdayList()" class="w-full p-4 bg-slate-50 rounded-2xl border-none outline-none font-bold italic">
+                <option value="1" selected>فبراير 2026</option>
+                <option value="2">مارس 2026</option>
+            </select>
+            <div id="thursdayList" class="max-h-64 overflow-y-auto space-y-3 p-1"></div>
+            <button onclick="closeSalaryModal()" class="w-full bg-slate-100 py-3 rounded-2xl font-black text-slate-400 mt-2">رجوع</button>
+        </div>
+    </div>
+
+    <div id="leaveModal" class="modal-overlay">
+        <div class="bg-white w-[90%] max-w-sm rounded-[2.5rem] p-6 shadow-2xl space-y-4 text-center">
+            <h3 class="text-[#137fec] font-black text-lg italic">تقويم الإجازات</h3>
+            <div id="vacationGrid" class="grid grid-cols-5 gap-3 p-2 bg-slate-50 rounded-3xl"></div>
+            <p class="text-[11px] text-slate-500 font-bold italic">المتبقي: <span id="modalBalance">21</span> يوم</p>
+            <button onclick="closeLeaveModal()" class="w-full bg-slate-100 py-3 rounded-2xl font-black text-slate-400 mt-2">إغلاق</button>
+        </div>
+    </div>
+
+    <div id="qr-overlay">
+        <video id="video" autoplay playsinline></video>
+        <div class="scan-frame"></div>
+        <button onclick="closeScanner()" class="absolute bottom-20 right-1/2 translate-x-1/2 bg-white/20 text-white px-8 py-3 rounded-full italic font-black">إلغاء</button>
+    </div>
+
+    <header class="bg-white px-6 pt-12 pb-6 border-b border-blue-50 sticky top-0 z-50">
+        <div class="flex items-center justify-between max-w-md mx-auto">
+            <div class="flex items-center gap-3">
+                <div class="relative w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center border-2 border-blue-100 overflow-hidden text-[#137fec]">
+                    <span class="material-icons text-3xl">person</span>
+                </div>
+                <div>
+                    <p class="text-sm text-[#137fec] font-bold italic uppercase leading-none mb-1">نور للإضاءة الحديثة</p>
+                    <h1 id="welcomeName" class="text-2xl font-black text-slate-900 italic leading-none">أهلاً بكِ</h1>
+                </div>
+            </div>
+            <button onclick="openNotifications()" class="relative w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-100">
+                <span class="material-icons text-slate-400">notifications</span>
+                <div id="notifCount" class="notif-badge hidden">0</div>
+            </button>
+        </div>
+    </header>
+
+    <main class="p-4 space-y-6 max-w-md mx-auto text-right">
+        <section class="space-y-3">
+            <h2 class="text-lg font-bold px-2 flex items-center gap-2 text-slate-700 italic">
+                <span class="material-icons text-[#137fec]">qr_code_scanner</span> الحضور والانصراف
+            </h2>
+            <div class="grid grid-cols-2 gap-4 text-right">
+                <button id="checkInBtn" onclick="openScanner('حضور')" class="bg-[#137fec] text-white p-5 rounded-2xl ios-shadow flex flex-col items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
+                    <span class="material-icons text-3xl">qr_code_scanner</span>
+                    <span class="font-bold text-xs uppercase italic">تسجيل حضور</span>
+                </button>
+                <button id="checkOutBtn" onclick="openScanner('انصراف')" class="bg-white border-2 border-blue-100 text-[#137fec] p-5 rounded-2xl ios-shadow flex flex-col items-center justify-center gap-2 btn-locked">
+                    <span id="lockIcon" class="material-icons text-3xl">lock</span>
+                    <span class="font-bold text-xs uppercase italic text-center">تسجيل انصراف</span>
+                </button>
+            </div>
+        </section>
+
+        <section class="bg-white p-6 rounded-[2rem] ios-shadow border border-blue-50 text-center">
+            <div class="flex items-center justify-between mb-4 px-2 text-right">
+                <h2 class="text-lg font-bold text-slate-700 italic uppercase">الراتب الأسبوعي</h2>
+                <span class="text-xs bg-blue-50 text-[#137fec] px-3 py-1 rounded-full font-bold">2026</span>
+            </div>
+            <div class="bg-slate-50 p-6 rounded-3xl border border-slate-100 shadow-inner">
+                <p class="text-xs text-slate-500 font-bold mb-1 italic uppercase text-center">صافي الأسبوع الحالي</p>
+                <p id="netSalaryText" class="text-3xl font-black text-slate-900 tracking-tight italic text-center">0 <span class="text-sm">ج.م</span></p>
+                <button onclick="openSalaryModal()" class="w-full mt-4 bg-orange-50 text-orange-600 py-4 rounded-2xl font-bold text-xs shadow-sm flex items-center justify-center gap-3 italic uppercase">
+                    <span class="material-icons">receipt_long</span> سجل أيام الخميس السابقة
+                </button>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-4 gap-2 text-center font-black italic">
+            <div class="bg-white p-3 rounded-2xl border border-blue-50 shadow-sm">
+                <span class="material-icons text-blue-500 text-lg mb-1">verified_user</span>
+                <p id="insuranceText" class="text-[8px]">التأمينات<br>0</p>
+            </div>
+            <div class="bg-white p-3 rounded-2xl border border-orange-50 cursor-pointer" onclick="window.location.href='loans_report.html'">
+                <span class="material-icons text-orange-500 text-lg mb-1">wallet</span>
+                <p id="loansText" class="text-[8px] text-orange-600">السلف<br>0</p>
+            </div>
+            <div class="bg-white p-3 rounded-2xl border border-emerald-50 shadow-sm">
+                <span class="material-icons text-green-500 text-lg mb-1">redeem</span>
+                <p id="bonusText" class="text-[8px] text-emerald-600">الحوافز<br>0</p>
+            </div>
+            <div class="bg-white p-3 rounded-2xl border border-red-50 cursor-pointer" onclick="window.location.href='penalties_report.html'">
+                <span class="material-icons text-red-500 text-lg mb-1">gavel</span>
+                <p id="penaltyText" class="text-[8px] text-red-600">الجزاءات<br>0</p>
+            </div>
+        </section>
+
+        <section class="space-y-3 text-right">
+            <h2 class="text-lg font-bold px-2 text-slate-700 italic uppercase text-right">الطلبات والإجازات</h2>
+            <div class="bg-white p-5 rounded-[2rem] border border-blue-50 flex items-center justify-between cursor-pointer" onclick="openLeaveModal()">
+                <div class="flex items-center gap-4 text-right">
+                    <div class="w-10 h-10 bg-blue-50 text-[#137fec] rounded-xl flex items-center justify-center"><span class="material-icons">event_busy</span></div>
+                    <div>
+                        <p class="font-bold text-sm italic uppercase text-right leading-none">الإجازات السنوية</p>
+                        <p class="text-[10px] text-slate-500 italic mt-1 text-right">رصيد الـ <span id="vacaBalanceDisplay">21</span> يوم</p>
+                    </div>
+                </div>
+                <span class="text-[10px] bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full font-bold italic uppercase">تفاصيل</span>
+            </div>
+            <div class="grid grid-cols-2 gap-3 mt-2 text-right">
+                <button onclick="window.location.href='request_vacation.html'" class="bg-blue-50 text-[#137fec] py-4 rounded-2xl font-bold border border-blue-100 text-[10px] italic shadow-sm uppercase">طلب إجازة</button>
+                <button onclick="window.location.href='request_loan.html'" class="bg-blue-50 text-[#137fec] py-4 rounded-2xl font-bold border border-blue-100 text-[10px] italic shadow-sm uppercase">طلب سلفة</button>
+            </div>
+        </section>
+
+        <section class="pt-4">
+            <a href="guidelines.html" class="flex items-center justify-between bg-gradient-to-l from-[#137fec] to-blue-600 p-6 rounded-[2rem] text-white shadow-lg active:scale-95 transition-all no-underline text-right">
+                <div class="flex items-center gap-4 text-white text-right">
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm"><span class="material-icons text-2xl text-white">menu_book</span></div>
+                    <div class="text-right">
+                        <h3 class="font-bold text-lg italic uppercase text-white leading-tight">دليل شركة نور</h3>
+                        <p class="text-xs text-white/80 italic font-bold leading-none">لوائح العمل والسلامة</p>
+                    </div>
+                </div>
+                <span class="material-icons text-white">arrow_back</span>
+            </a>
+        </section>
+
+        <footer class="pt-8 pb-4 text-center border-t border-slate-100">
+            <p class="text-slate-400 text-[10px] font-bold tracking-widest uppercase italic text-center">تطوير: مروه سمير حسن - 2026</p>
+        </footer>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 px-8 py-4 pb-8 flex items-center justify-between z-50">
+        <button onclick="window.location.href='home.html'" class="flex flex-col items-center gap-1 text-[#137fec]"><span class="material-icons">dashboard</span><span class="text-[10px] font-bold italic">الرئيسية</span></button>
+        <button onclick="showQuickHistory()" class="flex flex-col items-center gap-1 text-slate-400"><span class="material-icons">history</span><span class="text-[10px] font-bold italic text-center">السجل</span></button>
+        <button onclick="openNotifications()" class="flex flex-col items-center gap-1 text-slate-400 relative">
+            <span class="material-icons">notifications</span>
+            <span id="notifBadgeNav" class="notif-badge hidden">0</span>
+            <span class="text-[10px] font-bold italic text-center">تنبيهات</span>
+        </button>
+    </nav>
+
+    <script>
+        let stream = null;
+        window.onload = function() {
+            const name = localStorage.getItem('logged_in_employee_name') || "مروه سمير";
+            document.getElementById('welcomeName').innerText = "أهلاً بكِ، " + name;
+            updateButtonUI();
+            generateThursdayList();
+            checkNotifications(); // فحص الإشعارات فور الدخول
+        };
+
+        // دالة فتح الإشعارات (الجديدة)
+        function openNotifications() {
+            const name = localStorage.getItem('logged_in_employee_name');
+            const allNotifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+            const myNotifs = allNotifs.filter(n => n.to === name).reverse();
+            
+            const list = document.getElementById('notificationsList');
+            if (myNotifs.length > 0) {
+                list.innerHTML = myNotifs.map(n => `
+                    <div class="p-4 bg-blue-50 rounded-2xl border-r-4 border-[#137fec] text-right shadow-sm">
+                        <p class="text-xs font-black text-slate-800 italic leading-snug">${n.message}</p>
+                        <p class="text-[8px] text-slate-400 mt-2 font-bold">${n.time} - ${n.date}</p>
+                    </div>
+                `).join('');
+            } else {
+                list.innerHTML = `<p class="text-center text-slate-400 text-xs py-4 italic">لا توجد تنبيهات من الإدارة حالياً</p>`;
+            }
+            document.getElementById('notificationsModal').style.display = 'flex';
+        }
+
+        // فحص وجود إشعارات جديدة (نقطة حمراء)
+        function checkNotifications() {
+            const name = localStorage.getItem('logged_in_employee_name');
+            const allNotifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+            const myNotifs = allNotifs.filter(n => n.to === name);
+            
+            if (myNotifs.length > 0) {
+                document.getElementById('notifCount').innerText = myNotifs.length;
+                document.getElementById('notifCount').classList.remove('hidden');
+                document.getElementById('notifBadgeNav').innerText = myNotifs.length;
+                document.getElementById('notifBadgeNav').classList.remove('hidden');
+            } else {
+                document.getElementById('notifCount').classList.add('hidden');
+                document.getElementById('notifBadgeNav').classList.add('hidden');
+            }
+        }
+
+        // --- باقي دوالك الأساسية بدون تغيير ---
+
+        function showQuickHistory() {
+            const logs = JSON.parse(localStorage.getItem('nour_attendance_logs')) || [];
+            const myName = localStorage.getItem('logged_in_employee_name');
+            const myLast = logs.filter(l => l.name === myName).pop();
+            const box = document.getElementById('lastLogContent');
+            if (myLast) {
+                box.innerHTML = `<p class='text-blue-600 font-black'>${myLast.action}</p><p class='text-xs mt-1 text-slate-600 font-bold'>الساعة: ${myLast.time}</p><p class='text-[10px] text-slate-400 italic'>${myLast.date}</p>`;
+            } else {
+                box.innerHTML = `<p class='text-slate-400'>لا توجد سجلات مسجلة</p>`;
+            }
+            document.getElementById('quickHistoryPopup').style.display = 'flex';
+        }
+
+        async function openScanner(type) {
+            const overlay = document.getElementById('qr-overlay');
+            const video = document.getElementById('video');
+            overlay.style.display = 'block';
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+                video.srcObject = stream;
+                setTimeout(() => { saveAttendanceLog(type); }, 2000);
+            } catch (err) { alert("برجاء تفعيل الكاميرا!"); closeScanner(); }
+        }
+
+        function saveAttendanceLog(type) {
+            const name = localStorage.getItem('logged_in_employee_name') || "مروه سمير";
+            const now = new Date();
+            let logs = JSON.parse(localStorage.getItem('nour_attendance_logs')) || [];
+            logs.push({ name, action: type, time: now.toLocaleTimeString('ar-EG'), date: now.toLocaleDateString('ar-EG') });
+            localStorage.setItem('nour_attendance_logs', JSON.stringify(logs));
+            localStorage.setItem('attendance_status', type === 'حضور' ? 'in' : 'out');
+            closeScanner();
+            location.reload();
+        }
+
+        function closeScanner() {
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            document.getElementById('qr-overlay').style.display = 'none';
+        }
+
+        function updateButtonUI() {
+            const status = localStorage.getItem('attendance_status');
+            if (status === 'in') {
+                document.getElementById('checkInBtn').classList.add('btn-locked');
+                document.getElementById('checkOutBtn').classList.remove('btn-locked');
+                document.getElementById('lockIcon').innerText = "qr_code_scanner";
+            } else if (status === 'out') {
+                document.getElementById('checkInBtn').classList.add('btn-locked');
+                document.getElementById('checkOutBtn').classList.add('btn-locked');
+            }
+        }
+
+        function generateThursdayList() {
+            const list = document.getElementById('thursdayList');
+            list.innerHTML = `<div class='thursday-card shadow-sm' onclick="showReceipt('20 فبراير')">خميس 20 فبراير <span class='text-emerald-600 font-bold'>✅ تم الصرف</span></div>`;
+        }
+        function showReceipt(dateText) {
+            document.getElementById('receiptDate').innerText = dateText + " 2026";
+            document.getElementById('rTotal').innerText = "1,500 ج.م";
+            document.getElementById('receiptModal').style.display = 'flex';
+        }
+        function closeReceipt() { document.getElementById('receiptModal').style.display = 'none'; }
+        function openSalaryModal() { document.getElementById('salaryHistoryModal').style.display = 'flex'; }
+        function closeSalaryModal() { document.getElementById('salaryHistoryModal').style.display = 'none'; }
+        function openLeaveModal() { document.getElementById('leaveModal').style.display = 'flex'; }
+        function closeLeaveModal() { document.getElementById('leaveModal').style.display = 'none'; }
+    </script>
+</body>
+</html>

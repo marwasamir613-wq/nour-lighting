@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>شركة نور للإضاءة الحديثة</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="نور">
+    <link rel="apple-touch-icon" href="a.png.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; min-height: 100vh; }
+        .no-underline { text-decoration: none !important; }
+    </style>
+</head>
+<body class="bg-[#f6f7f8] flex flex-col select-none">
+    <div class="relative flex-1 flex flex-col items-center justify-between px-6 pt-20 pb-12 w-full max-w-md mx-auto">
+        
+        <div class="flex flex-col items-center text-center space-y-6">
+            <div class="w-48 h-32 bg-white rounded-3xl shadow-xl flex items-center justify-center p-4 border border-blue-50 overflow-hidden">
+                <img 
+                    alt="Logo" 
+                    class="w-full h-full object-contain" 
+                    src="a.png.png" 
+                    onerror="this.src='a.png'; this.onerror=function(){this.src='https://cdn-icons-png.flaticon.com/512/4303/4303472.png'};"
+                />
+            </div>
+            <div class="space-y-2">
+                <h1 class="text-3xl font-extrabold text-slate-900">شركة نور للإضاءة الحديثة</h1>
+                <p class="text-slate-500 font-medium text-sm">نظام إدارة الموظفين المتطور</p>
+            </div>
+        </div>
+
+        <div class="w-full flex flex-col space-y-4">
+            
+            <a href="login.html" class="w-full bg-[#137fec] text-white flex items-center justify-between p-5 rounded-xl shadow-lg no-underline transition-all active:scale-95">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span class="material-icons">badge</span>
+                    <span class="text-lg font-bold">التسجيل كموظف</span>
+                </div>
+                <span class="material-icons">chevron_left</span>
+            </a>
+
+            <a href="admin_login.html" class="w-full bg-white border-2 border-blue-100 text-slate-900 flex items-center justify-between p-5 rounded-xl no-underline transition-all active:scale-95">
+                <div class="flex items-center space-x-4 space-x-reverse">
+                    <span class="material-icons text-[#137fec]">admin_panel_settings</span>
+                    <span class="text-lg font-bold">التسجيل كأدمن</span>
+                </div>
+                <span class="material-icons text-blue-200">chevron_left</span>
+            </a>
+        </div>
+
+        <div class="pt-4 border-t border-slate-200 w-full flex justify-center text-center">
+            <div class="bg-slate-100 px-4 py-2 rounded-full">
+                <p class="text-sm font-medium text-slate-600">
+                    مبرمجة التطبيق: <span class="text-[#137fec] font-bold"> مروه سمير</span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkAndSyncData() {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const loggedInEmp = localStorage.getItem('logged_in_employee_name');
+            if (loggedInEmp) {
+                const currentEmp = employees.find(e => e.name === loggedInEmp);
+                if (currentEmp) {
+                    console.log("تم الربط بنجاح يا مروة.");
+                }
+            }
+        }
+        window.onload = checkAndSyncData;
+    </script>
+</body>
+</html>

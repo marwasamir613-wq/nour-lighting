@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>تعديل بيانات الموظف - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body class="p-6 pb-20 text-right">
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-8">
+        <button onclick="localStorage.removeItem('employee_to_edit'); window.location.href='edit_employees_list.html'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center border border-slate-100 active:scale-90 transition-transform">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 class="text-xl font-bold text-slate-800 italic uppercase">تعديل الموظف المختار</h1>
+    </header>
+
+    <main class="max-w-md mx-auto bg-white p-8 rounded-[2.5rem] shadow-xl border border-purple-50 space-y-5">
+        <div class="flex flex-col items-center gap-3 mb-4">
+            <div id="photoContainer" class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center border-2 border-dashed border-purple-200 text-slate-400 relative overflow-hidden shadow-inner">
+                <span id="uploadIcon" class="material-icons-round text-4xl">add_a_photo</span>
+                <img id="previewImg" class="hidden w-full h-full object-cover">
+                <input type="file" id="empPhoto" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewFile()">
+            </div>
+            <p class="text-[10px] font-bold text-slate-400 italic uppercase tracking-tighter">اضغط لتغيير الصورة الشخصية</p>
+        </div>
+
+        <div class="space-y-4">
+            <input type="text" id="empName" placeholder="الاسم الكامل" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+            
+            <select id="empDept" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm text-slate-500 focus:ring-2 focus:ring-purple-500 outline-none text-right">
+                <option value="">اختر القسم</option>
+                <option value="الرش">قسم الرش</option>
+                <option value="التجمع">قسم التجمع</option>
+                <option value="الورشة">قسم الورشة</option>
+                <option value="المخزن">قسم المخزن</option>
+            </select>
+
+            <input type="text" id="empJob" placeholder="المهنة التفصيلية" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-purple-500 outline-none">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <input type="number" id="empAge" placeholder="السن" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-purple-500 outline-none text-right">
+                <select id="empStatus" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm text-slate-500 focus:ring-2 focus:ring-purple-500 outline-none text-right">
+                    <option value="">حالة الموظف</option>
+                    <option value="نشط">نشط</option>
+                    <option value="موقوف">موقوف</option>
+                </select>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100">
+                <label class="text-[10px] font-bold text-purple-600 mr-2 block mb-3 italic uppercase tracking-widest">تعديل مبالغ الرواتب (ج.م)</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="salaryMonthly" placeholder="شهري" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs outline-none text-right focus:ring-1 focus:ring-purple-200">
+                    <input type="number" id="salaryWeekly" placeholder="أسبوعي" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs outline-none text-right focus:ring-1 focus:ring-purple-200">
+                    <input type="number" id="salaryBiWeekly" placeholder="أسبوعين" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs outline-none text-right focus:ring-1 focus:ring-purple-200">
+                    <input type="number" id="salaryDaily" placeholder="يومي" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-xs outline-none text-right focus:ring-1 focus:ring-purple-200">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="updateEmployeeData()" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-extrabold text-lg shadow-lg active:scale-95 transition-all mt-6 shadow-purple-200/50 italic">تحديث وحفظ البيانات</button>
+    </main>
+
+    <script>
+        let base64Image = "";
+
+        // ١. جلب البيانات فور فتح الصفحة (التعبئة التلقائية)
+        window.onload = function() {
+            const empId = localStorage.getItem('employee_to_edit');
+            if (!empId) {
+                window.location.href = 'edit_employees_list.html';
+                return;
+            }
+
+            const employees = JSON.parse(localStorage.getItem('noor_employees')) || [];
+            // البحث بدقة باستخدام الـ ID
+            const empData = employees.find(e => String(e.id) === String(empId));
+
+            if (empData) {
+                // ملء الخانات
+                document.getElementById('empName').value = empData.name || "";
+                document.getElementById('empDept').value = empData.dept || "";
+                document.getElementById('empJob').value = empData.job || "";
+                document.getElementById('empAge').value = empData.age || "";
+                document.getElementById('empStatus').value = empData.status || "";
+                
+                // ملء الرواتب مع معالجة الأرقام
+                document.getElementById('salaryMonthly').value = empData.salaries?.monthly || 0;
+                document.getElementById('salaryWeekly').value = empData.salaries?.weekly || 0;
+                document.getElementById('salaryBiWeekly').value = empData.salaries?.biweekly || 0;
+                document.getElementById('salaryDaily').value = empData.salaries?.daily || 0;
+                
+                // إظهار الصورة القديمة فوراً
+                if (empData.photo) {
+                    base64Image = empData.photo;
+                    const preview = document.getElementById('previewImg');
+                    preview.src = empData.photo;
+                    preview.classList.remove('hidden');
+                    document.getElementById('uploadIcon').classList.add('hidden');
+                }
+            }
+        };
+
+        // ٢. وظيفة معاينة الصورة الجديدة
+        function previewFile() {
+            const file = document.getElementById('empPhoto').files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const preview = document.getElementById('previewImg');
+                preview.src = reader.result;
+                base64Image = reader.result;
+                preview.classList.remove('hidden');
+                document.getElementById('uploadIcon').classList.add('hidden');
+            }
+            if (file) reader.readAsDataURL(file);
+        }
+
+        // ٣. وظيفة الحفظ والتحديث النهائي
+        function updateEmployeeData() {
+            const empId = localStorage.getItem('employee_to_edit');
+            let employees = JSON.parse(localStorage.getItem('noor_employees')) || [];
+            const index = employees.findIndex(e => String(e.id) === String(empId));
+
+            if (index !== -1) {
+                // تحديث البيانات مع الحفاظ على البيانات الأساسية الأخرى
+                employees[index] = {
+                    ...employees[index],
+                    name: document.getElementById('empName').value,
+                    dept: document.getElementById('empDept').value,
+                    job: document.getElementById('empJob').value,
+                    age: document.getElementById('empAge').value,
+                    status: document.getElementById('empStatus').value,
+                    photo: base64Image,
+                    salaries: {
+                        monthly: document.getElementById('salaryMonthly').value || 0,
+                        weekly: document.getElementById('salaryWeekly').value || 0,
+                        biweekly: document.getElementById('salaryBiWeekly').value || 0,
+                        daily: document.getElementById('salaryDaily').value || 0
+                    }
+                };
+                
+                // الحفظ في المخزن الموحد
+                localStorage.setItem('noor_employees', JSON.stringify(employees));
+                
+                // تنظيف الذاكرة المؤقتة للتعديل
+                localStorage.removeItem('employee_to_edit');
+                
+                alert("تم تحديث بيانات " + employees[index].name + " بنجاح!");
+                window.location.href = 'edit_employees_list.html';
+            }
+        }
+    </script>
+</body>
+</html>

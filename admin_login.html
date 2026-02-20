@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دخول الإدارة - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style> body { font-family: 'Cairo', sans-serif; background: #f6f7f8; } </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-6 text-right italic font-bold">
+
+    <div class="bg-white w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border-t-8 border-[#137fec]">
+        <h2 class="text-2xl font-black text-center mb-8 text-slate-800 italic uppercase">نظام الإدارة - شركة نور</h2>
+        
+        <div class="space-y-4">
+            <div>
+                <label class="block text-sm font-black mb-2 mr-2 italic">اسم المستخدم</label>
+                <input type="text" id="user" class="w-full p-4 bg-slate-100 rounded-2xl text-center font-black outline-none border-none focus:ring-2 focus:ring-[#137fec]" placeholder="ادخل اسمك">
+            </div>
+
+            <div>
+                <label class="block text-sm font-black mb-2 mr-2 italic">كود الدخول</label>
+                <input type="password" id="pass" class="w-full p-4 bg-slate-100 rounded-2xl text-center font-black outline-none border-none focus:ring-2 focus:ring-[#137fec]" placeholder="•••••">
+            </div>
+
+            <button onclick="login()" class="w-full bg-[#137fec] text-white p-4 rounded-2xl font-black text-xl shadow-lg active:scale-95 transition-all">
+                دخول النظام
+            </button>
+            
+            <p id="err" class="text-red-500 text-center font-black mt-4 h-4 italic text-sm"></p>
+        </div>
+    </div>
+
+    <script>
+        function login() {
+            // تنظيف المسافات الزائدة
+            const u = document.getElementById('user').value.trim();
+            const p = document.getElementById('pass').value.trim();
+            
+            // التحقق من البيانات الجديدة
+            if (u === "admin nour" && p === "12345") {
+                sessionStorage.setItem('isAdmin', 'true');
+                window.location.href = 'admin_dashboard.html';
+            } else {
+                document.getElementById('err').innerText = "بيانات الدخول غلط يا بشمهندسة مروة!";
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>سجل الرواتب الأسبوعي</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; }
+        .thursday { background: #137fec; color: white; border-radius: 12px; cursor: pointer; transform: scale(1.05); }
+        .thursday:active { transform: scale(0.95); }
+        #salaryBox { display: none; }
+    </style>
+</head>
+<body class="bg-[#f6f7f8] p-6 flex flex-col items-center">
+    
+    <header class="w-full max-w-sm flex items-center justify-between mb-8">
+        <button onclick="window.location.href='home.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center">
+            <span class="material-icons text-slate-600">arrow_forward</span>
+        </button>
+        <div class="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl shadow-sm border border-blue-50">
+            <button class="text-[#137fec] font-bold"><</button>
+            <h1 id="currentYear" class="text-lg font-black text-slate-800">2026</h1>
+            <button class="text-[#137fec] font-bold">></button>
+        </div>
+        <div class="w-10"></div> </header>
+
+    <h2 class="text-sm font-bold text-slate-500 mb-4">اختر يوم الخميس لعرض الراتب</h2>
+
+    <div class="grid grid-cols-7 gap-2 max-w-sm w-full bg-white p-5 rounded-[2.5rem] shadow-sm mb-10 text-center font-bold text-xs">
+        <div class="p-3 text-slate-400">س</div><div class="p-3 text-slate-400">ج</div><div class="p-3 text-[#137fec]">خ</div><div class="p-3 text-slate-400">ع</div><div class="p-3 text-slate-400">ث</div><div class="p-3 text-slate-400">ن</div><div class="p-3 text-slate-400">ح</div>
+        
+        <div class="p-4 text-slate-200">1</div><div class="p-4 text-slate-200">2</div>
+        <div onclick="showSalary('3,500', '3 فبراير')" class="p-4 thursday">3</div>
+        <div class="p-4 text-slate-200">4</div><div class="p-4 text-slate-200">5</div><div class="p-4 text-slate-200">6</div><div class="p-4 text-slate-200">7</div><div class="p-4 text-slate-200">8</div><div class="p-4 text-slate-200">9</div>
+        <div onclick="showSalary('3,250', '10 فبراير')" class="p-4 thursday">10</div>
+    </div>
+
+    <div id="salaryBox" class="w-full max-w-sm bg-white p-8 rounded-[3rem] border-4 border-[#137fec] text-center shadow-2xl animate-bounce">
+        <p class="text-slate-500 font-bold mb-2">راتب يوم <span id="payDate"></span></p>
+        <p id="payAmount" class="text-4xl font-black text-[#137fec]"></p>
+        
+        <div class="mt-4 pt-4 border-t border-slate-100">
+            <p class="text-[10px] text-slate-400 font-bold tracking-widest uppercase">اسم الموظف</p>
+            <p id="employeeName" class="text-sm font-black text-slate-700 mt-1">مروه سمير حسن</p>
+        </div>
+    </div>
+
+    <script>
+        // دالة لعرض الراتب
+        function showSalary(amount, date) {
+            document.getElementById('salaryBox').style.display = 'block';
+            document.getElementById('payAmount').innerText = amount + ' ج.م';
+            document.getElementById('payDate').innerText = date;
+            
+            // تمرير الصفحة لأسفل لتظهر النتيجة بوضوح
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        // ملاحظة: الأزرار < و > يمكن برمجتها لاحقاً لتغيير البيانات برمجياً
+    </script>
+</body>
+</html>

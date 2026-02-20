@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>لوحة الإدارة - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .royal-gradient { background: linear-gradient(135deg, #137fec 0%, #0b5cb3 100%); }
+        .admin-card { transition: all 0.3s ease; border: 1px solid #f1f5f9; cursor: pointer; height: 110px; }
+        .admin-card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); }
+        .admin-card:active { scale: 0.95; }
+        /* تصغير الشريط الأسود */
+        .notification-board { background: #0f172a; border-top: 4px solid #137fec; border-radius: 2rem 2rem 0 0; max-height: 180px; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    </style>
+</head>
+<body class="text-slate-800 pb-52 text-right italic font-bold"> <header class="royal-gradient pt-8 pb-16 px-6 rounded-b-[2.5rem] shadow-xl">
+        <div class="max-w-md mx-auto flex items-center justify-between text-white">
+            <div class="flex items-center gap-3">
+                <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-blue-600 shadow-inner">
+                    <span class="material-icons-round text-4xl">lightbulb</span>
+                </div>
+                <div><h1 class="font-bold text-lg italic">لوحة الإدارة العليا</h1><p class="text-white/70 text-[10px] uppercase italic">نور للإضاءة الحديثة</p></div>
+            </div>
+            <button onclick="window.location.href='employee_requests.html'" class="relative w-12 h-12 bg-white/10 rounded-full flex items-center justify-center border border-white/20">
+                <span class="material-icons-round text-2xl">notifications_active</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="px-5 -mt-8 max-w-md mx-auto space-y-6">
+        <div class="bg-white p-5 rounded-[2rem] shadow-xl flex items-center justify-around border border-blue-50">
+            <div class="text-center"><p class="text-[10px] text-slate-400 font-bold uppercase italic">الموظفين</p><p id="totalEmployeesCount" class="text-xl font-black italic">0</p></div>
+            <div class="w-px h-8 bg-slate-100"></div>
+            <div class="text-center"><p class="text-[10px] text-slate-400 font-bold uppercase italic text-emerald-500">حضور</p><p id="todayPresentCount" class="text-xl font-black italic text-emerald-500">0</p></div>
+            <div class="w-px h-8 bg-slate-100"></div>
+            <button onclick="window.location.href='company_followup.html'" class="text-center"><p class="text-[10px] text-red-400 font-bold uppercase italic">غياب</p><p id="todayAbsentCount" class="text-xl font-black italic text-red-500">0</p></button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="window.location.href='employee_management.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-blue-600 shadow-sm">
+                <span class="material-icons-round text-3xl">groups</span><span class="text-[10px] font-bold italic uppercase">إدارة الموظفين</span>
+            </button>
+
+            <button onclick="window.location.href='company_followup.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-orange-600 shadow-sm">
+                <span class="material-icons-round text-3xl">visibility</span><span class="text-[10px] font-bold italic uppercase">متابعة الشركة</span>
+            </button>
+
+            <button onclick="window.location.href='monthly_attendance.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-red-500 shadow-sm">
+                <span class="material-icons-round text-3xl">calendar_month</span><span class="text-[10px] font-bold italic uppercase text-center">غيابات الشهر</span>
+            </button>
+
+            <button onclick="openModal('loanModal')" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-emerald-600 shadow-sm">
+                <span class="material-icons-round text-3xl">payments</span><span class="text-[10px] font-bold italic uppercase">تسجيل سلفة</span>
+            </button>
+
+            <button onclick="window.location.href='all_loans_report.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-blue-900 shadow-sm">
+                <span class="material-icons-round text-3xl">history_edu</span><span class="text-[10px] font-bold italic uppercase">سجل السلف</span>
+            </button>
+
+            <button onclick="window.location.href='send_warning.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-amber-600 shadow-sm">
+                <span class="material-icons-round text-3xl">report_problem</span><span class="text-[10px] font-bold italic uppercase">إرسال إنذار</span>
+            </button>
+
+            <button onclick="window.location.href='salaries_calculation.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-purple-600 shadow-sm">
+                <span class="material-icons-round text-3xl">account_balance_wallet</span><span class="text-[10px] font-bold italic uppercase text-center text-[8px]">الرواتب والإضافي</span>
+            </button>
+
+            <button onclick="window.location.href='attendance_reports.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-indigo-600 shadow-sm">
+                <span class="material-icons-round text-3xl">analytics</span><span class="text-[10px] font-bold italic uppercase">التقارير</span>
+            </button>
+
+            <button onclick="window.location.href='add_action.html'" class="admin-card bg-white p-4 rounded-[2.5rem] flex flex-col items-center justify-center gap-2 text-amber-500 shadow-sm col-span-2 border border-amber-50">
+                <div class="flex gap-2">
+                    <span class="material-icons-round text-3xl">stars</span>
+                    <span class="material-icons-round text-3xl">remove_circle</span>
+                </div>
+                <span class="text-[10px] font-black italic uppercase">إضافة مكافأة أو خصم إداري</span>
+            </button>
+        </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto px-4 z-50">
+        <div class="notification-board p-4 shadow-2xl">
+            <div class="flex items-center gap-2 mb-2">
+                <span class="material-icons-round text-blue-400 text-sm animate-pulse">campaign</span>
+                <h3 class="text-white text-[10px] uppercase tracking-widest font-black italic">لوحة الإشعارات</h3>
+            </div>
+            <div id="alertsContainer" class="space-y-2 max-h-24 overflow-y-auto pr-2 custom-scrollbar text-[9px]"></div>
+        </div>
+    </div>
+
+    <div id="loanModal" class="fixed inset-0 bg-black/60 hidden z-[100] flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xs rounded-[2.5rem] p-6 text-right italic font-bold text-slate-800">
+            <h2 class="text-sm font-black mb-4 text-center text-blue-800 uppercase italic">تسجيل سلفة مالية</h2>
+            <div class="space-y-3">
+                <select id="loanEmpSelect" class="w-full bg-slate-100 p-3 rounded-xl text-xs font-bold outline-none border-none text-right italic"></select>
+                <input type="date" id="loanDate" class="w-full bg-slate-100 p-3 rounded-xl text-xs font-bold outline-none border-none">
+                <input type="number" id="loanAmount" placeholder="المبلغ المطلوب" class="w-full bg-slate-100 p-3 rounded-xl text-xs font-black outline-none border-none text-right italic">
+            </div>
+            <div class="flex gap-2 mt-4">
+                <button onclick="saveLoan()" class="flex-1 royal-gradient text-white p-3 rounded-xl text-[10px] font-black italic shadow-md">حفظ السلفة</button>
+                <button onclick="closeModal('loanModal')" class="flex-1 bg-slate-200 text-slate-500 p-3 rounded-xl text-[10px] font-bold">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            updateDashboardStats();
+            loadNotifications();
+        };
+
+        function loadNotifications() {
+            const notifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+            const container = document.getElementById('alertsContainer');
+            if (notifs.length === 0) {
+                container.innerHTML = `<p class="text-slate-500 text-center py-2 italic text-[9px]">لا توجد تنبيهات</p>`;
+                return;
+            }
+            container.innerHTML = notifs.map(n => `
+                <div class="bg-white/5 border border-white/10 p-2 rounded-xl flex items-center justify-between mb-1">
+                    <div class="flex flex-col text-white">
+                        <span class="text-blue-400 font-black italic text-[8px] uppercase">${n.title || 'تنبيه'}</span>
+                        <span class="font-bold">${n.message}</span>
+                    </div>
+                </div>
+            `).reverse().join('');
+        }
+
+        function openModal(id) {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const select = document.getElementById('loanEmpSelect');
+            if(employees.length === 0) {
+                alert("يا مروة مفيش موظفين!");
+                return;
+            }
+            select.innerHTML = employees.map(e => `<option value="${e.name}">${e.name}</option>`).join('');
+            document.getElementById('loanDate').value = new Date().toISOString().split('T')[0];
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function saveLoan() {
+            const name = document.getElementById('loanEmpSelect').value;
+            const amt = parseFloat(document.getElementById('loanAmount').value) || 0;
+            const date = document.getElementById('loanDate').value;
+            
+            if(amt <= 0 || !date) { alert("راجعي البيانات!"); return; }
+
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const idx = employees.findIndex(e => e.name === name);
+
+            if(idx !== -1) {
+                employees[idx].loans = (parseFloat(employees[idx].loans) || 0) + amt;
+                localStorage.setItem('nour_employees', JSON.stringify(employees));
+                
+                let notifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+                notifs.push({ to: name, title: "💸 سلفة مالية", message: `تم سحب مبلغ ${amt} ج.م للموظف ${name}`, date: date });
+                localStorage.setItem('nour_notifications', JSON.stringify(notifs));
+
+                alert("تم تسجيل السلفة بنجاح ✅");
+                loadNotifications();
+                closeModal('loanModal');
+            }
+        }
+
+        function updateDashboardStats() {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+            const today = new Date().toISOString().split('T')[0];
+            const presentToday = logs.filter(log => log.date === today && log.type === 'حضور').length;
+            
+            document.getElementById('totalEmployeesCount').innerText = employees.length;
+            document.getElementById('todayPresentCount').innerText = presentToday;
+            document.getElementById('todayAbsentCount').innerText = Math.max(0, employees.length - presentToday);
+        }
+    </script>
+</body>
+</html>

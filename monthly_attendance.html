@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/><title>تقارير غيابات نور - مروة سمير</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f0f4f8; }
+        .day-cell { min-width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 10px; font-weight: 900; transition: 0.3s; }
+        .present { background: #10b981; color: white; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2); }
+        .absent { background: #ef4444; color: white; box-shadow: 0 2px 4px rgba(239, 68, 68, 0.2); }
+        .sticky-col { position: sticky; right: 0; background: white; z-index: 20; border-left: 3px solid #137fec; }
+        .custom-scroll::-webkit-scrollbar { height: 10px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: #137fec; border-radius: 10px; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body class="p-4 text-right italic font-bold">
+
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-6 no-print gap-4">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='admin_dashboard.html'" class="w-12 h-12 bg-white rounded-2xl shadow flex items-center justify-center border-2 border-blue-100 active:scale-90"><span class="material-icons-round text-blue-600">arrow_forward</span></button>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 uppercase">تقارير الرقابة الشهرية 📊</h1>
+                <p class="text-[10px] text-blue-500 font-bold italic">شركة نور - مروة سمير</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <button onclick="syncAbsenceToSalaries()" class="bg-amber-500 text-white px-5 py-3 rounded-2xl text-[11px] font-black shadow-lg hover:bg-amber-600 active:scale-95 transition-all flex items-center gap-2">
+                <span class="material-icons-round">payments</span> تحديث المرتبات فوراً
+            </button>
+            <button onclick="exportToPDF()" class="bg-slate-800 text-white px-5 py-3 rounded-2xl text-[11px] font-black shadow-lg active:scale-95 flex items-center gap-2">
+                <span class="material-icons-round">picture_as_pdf</span> استخراج تقرير PDF
+            </button>
+        </div>
+    </header>
+
+    <section class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4 mb-8 no-print text-center">
+        <div class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-blue-500">
+            <p class="text-[10px] text-slate-400">إجمالي حضور الموظفين</p>
+            <p id="totalCompanyPresent" class="text-2xl font-black text-blue-600">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-red-500">
+            <p class="text-[10px] text-slate-400">إجمالي حالات الغياب</p>
+            <p id="totalCompanyAbsent" class="text-2xl font-black text-red-600">0</p>
+        </div>
+        <div class="bg-white p-4 rounded-[1.5rem] shadow-sm border-b-4 border-emerald-500">
+            <p class="text-[10px] text-slate-400">الشهر الحالي</p>
+            <input type="month" id="monthPicker" onchange="loadMonthlySheet()" class="font-black text-emerald-600 outline-none border-none text-center bg-transparent cursor-pointer">
+        </div>
+    </section>
+
+    <main id="reportContent" class="max-w-full mx-auto bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-blue-100">
+        <div class="overflow-x-auto custom-scroll">
+            <table class="w-full border-collapse">
+                <thead class="bg-slate-900 text-white text-[10px] uppercase italic">
+                    <tr id="daysHeader">
+                        <th class="p-5 sticky-col bg-slate-900 min-w-[200px]">قائمة الموظفين</th>
+                        </tr>
+                </thead>
+                <tbody id="attendanceBody" class="font-bold">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <script>
+        function loadMonthlySheet() {
+            const picker = document.getElementById('monthPicker').value || new Date().toISOString().slice(0, 7);
+            const [year, month] = picker.split('-').map(Number);
+            const daysInMonth = new Date(year, month, 0).getDate();
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+
+            // ١. رسم رأس الجدول (31 يوم)
+            let headerHtml = `<th class="p-5 sticky-col bg-slate-900 text-right min-w-[200px]">اسم الموظف</th>`;
+            for(let i=1; i<=daysInMonth; i++) headerHtml += `<th class="p-2 border-l border-slate-800/50">${i}</th>`;
+            headerHtml += `<th class="p-3 bg-blue-700">حضور</th><th class="p-3 bg-red-700">غياب</th>`;
+            document.getElementById('daysHeader').innerHTML = headerHtml;
+
+            // ٢. بناء صفوف الموظفين والربط بالـ QR
+            let bodyHtml = '';
+            let companyP = 0, companyA = 0;
+
+            employees.forEach(emp => {
+                let pCount = 0, aCount = 0;
+                let row = `<tr class="border-b border-slate-50 hover:bg-blue-50/30 transition-all">
+                           <td class="p-5 sticky-col font-black text-slate-700 border-l shadow-sm">${emp.name}</td>`;
+                
+                for(let d=1; d<=daysInMonth; d++) {
+                    const dateSearch = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    const isPresent = logs.some(l => l.name === emp.name && l.date === dateSearch && l.type === 'حضور');
+
+                    if (isPresent) {
+                        row += `<td class="p-1 border-l border-slate-100"><div class="day-cell present mx-auto">ح</div></td>`;
+                        pCount++; companyP++;
+                    } else {
+                        row += `<td class="p-1 border-l border-slate-100"><div class="day-cell absent mx-auto">غ</div></td>`;
+                        aCount++; companyA++;
+                    }
+                }
+                
+                row += `<td class="text-center font-black text-emerald-600 bg-emerald-50">${pCount}</td>`;
+                row += `<td class="text-center font-black text-red-600 bg-red-50" data-absent-for="${emp.name}">${aCount}</td></tr>`;
+                bodyHtml += row;
+            });
+
+            document.getElementById('attendanceBody').innerHTML = bodyHtml;
+            document.getElementById('totalCompanyPresent').innerText = companyP;
+            document.getElementById('totalCompanyAbsent').innerText = companyA;
+        }
+
+        // ترحيل الغياب فوراً للمرتبات (متابعة الشركة)
+        function syncAbsenceToSalaries() {
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const rows = document.querySelectorAll('[data-absent-for]');
+            
+            rows.forEach(cell => {
+                const name = cell.getAttribute('data-absent-for');
+                const count = parseInt(cell.innerText) || 0;
+                const idx = employees.findIndex(e => e.name === name);
+                if(idx !== -1) { employees[idx].absentDays = count; }
+            });
+
+            localStorage.setItem('nour_employees', JSON.stringify(employees));
+            alert("تم تحديث شيت المرتبات أوتوماتيك يا مروة! ✅ الخصومات اتحسبت بناءً على غياب الـ QR.");
+        }
+
+        function exportToPDF() {
+            const element = document.getElementById('reportContent');
+            const opt = { margin: 0.2, filename: 'تقرير_حضور_نور.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' } };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        window.onload = () => {
+            document.getElementById('monthPicker').value = new Date().toISOString().slice(0, 7);
+            loadMonthlySheet();
+        };
+    </script>
+</body>
+</html>

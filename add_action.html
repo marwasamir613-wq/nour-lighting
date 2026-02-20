@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>تسجيل عملية - نور للإضاءة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .invoice-card { background: white; border-radius: 2.5rem; padding: 1.5rem; border: 1px solid #eef2ff; position: relative; }
+        .invoice-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px; background: #137fec; border-radius: 2.5rem 2.5rem 0 0; }
+        .input-box { background: #fdfdff; border: 2px solid #eef2ff; border-radius: 1.2rem; padding: 12px; width: 100%; font-weight: 700; font-size: 13px; outline: none; transition: 0.3s; }
+        .input-box:focus { border-color: #137fec; background: white; }
+        .type-btn { flex: 1; padding: 12px; border-radius: 1rem; border: 2px solid #f1f5f9; transition: 0.3s; cursor: pointer; font-weight: 800; text-align: center; font-size: 12px; }
+        .type-btn.active-reward { background: #ecfdf5; border-color: #10b981; color: #065f46; }
+        .type-btn.active-penalty { background: #fef2f2; border-color: #ef4444; color: #991b1b; }
+    </style>
+</head>
+<body class="p-4 pb-24 text-right italic font-bold">
+
+    <header class="max-w-md mx-auto flex items-center justify-between mb-8">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100 active:scale-95 transition-all">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <div class="text-center">
+            <h1 class="text-lg font-black text-slate-800 italic uppercase">تسجيل مكافأة / خصم</h1>
+        </div>
+        <div class="w-10 h-10"></div>
+    </header>
+
+    <main class="max-w-md mx-auto space-y-6">
+        <div class="invoice-card shadow-2xl shadow-blue-900/5 space-y-6">
+            <div class="flex gap-3">
+                <div onclick="setType('مكافأة')" id="btnReward" class="type-btn active-reward flex items-center justify-center gap-2">
+                    <span class="material-icons-round text-sm">emoji_events</span> مكافأة
+                </div>
+                <div onclick="setType('خصم')" id="btnPenalty" class="type-btn flex items-center justify-center gap-2">
+                    <span class="material-icons-round text-sm">gavel</span> خصم
+                </div>
+            </div>
+
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 mr-2 mb-2 block italic uppercase tracking-widest">اسم الموظف المسجل:</label>
+                    <input id="empInput" list="employeesList" placeholder="ابدأ بكتابة الاسم..." class="input-box border-blue-50">
+                    <datalist id="employeesList"></datalist>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 mr-2 mb-2 block italic uppercase tracking-widest">المبلغ (ج.م):</label>
+                        <input id="amountInput" type="number" placeholder="٠.٠٠" class="input-box text-blue-600 text-lg">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-black text-slate-400 mr-2 mb-2 block italic uppercase tracking-widest">التاريخ:</label>
+                        <input id="dateInput" type="date" class="input-box text-slate-400">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-black text-slate-400 mr-2 mb-2 block italic uppercase tracking-widest">سبب العملية (سيصل للموظف):</label>
+                    <textarea id="reasonInput" placeholder="اكتب السبب هنا بالتفصيل..." class="input-box h-24 text-right"></textarea>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="submitAction()" class="w-full bg-slate-900 text-white py-5 rounded-[1.8rem] font-black text-sm shadow-xl active:scale-95 transition-all italic flex items-center justify-center gap-3">
+                    <span class="material-icons-round">send</span>
+                    اعتماد وإرسال الإشعار للموظف
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-[2rem] shadow-lg border border-blue-50">
+            <h3 class="text-xs font-black text-slate-400 mb-4 uppercase italic">آخر العمليات المسجلة</h3>
+            <div id="recentActions" class="space-y-3 max-h-60 overflow-y-auto"></div>
+        </div>
+    </main>
+
+    <script>
+        let currentType = 'مكافأة';
+
+        window.onload = function() {
+            loadEmployees();
+            loadRecentActions();
+            document.getElementById('dateInput').value = new Date().toISOString().split('T')[0];
+        };
+
+        function loadEmployees() {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            document.getElementById('employeesList').innerHTML = employees.map(emp => `<option value="${emp.name}">`).join('');
+        }
+
+        function setType(type) {
+            currentType = type;
+            const btnR = document.getElementById('btnReward');
+            const btnP = document.getElementById('btnPenalty');
+            if(type === 'مكافأة') {
+                btnR.classList.add('active-reward');
+                btnP.classList.remove('active-penalty');
+            } else {
+                btnP.classList.add('active-penalty');
+                btnR.classList.remove('active-reward');
+            }
+        }
+
+        function submitAction() {
+            const name = document.getElementById('empInput').value.trim();
+            const amount = parseFloat(document.getElementById('amountInput').value);
+            const date = document.getElementById('dateInput').value;
+            const reason = document.getElementById('reasonInput').value.trim();
+
+            if (!name || isNaN(amount) || amount <= 0) {
+                alert("يا مروة، لازم تكتبي الاسم والمبلغ صح!");
+                return;
+            }
+
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            let notifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+            const empIndex = employees.findIndex(e => e.name === name);
+            
+            if(empIndex !== -1) {
+                // الربط مع شيت المرتبات:
+                if(currentType === 'مكافأة') {
+                    // إضافة المكافأة لخانة bonuses في بيانات الموظف
+                    employees[empIndex].bonuses = (parseFloat(employees[empIndex].bonuses) || 0) + amount;
+                } else {
+                    // إضافة الخصم لخانة penalties في بيانات الموظف
+                    employees[empIndex].penalties = (parseFloat(employees[empIndex].penalties) || 0) + amount;
+                }
+                
+                // تسجيل الإشعار للموظف
+                notifs.push({
+                    to: name,
+                    title: currentType === 'مكافأة' ? "🌟 مكافأة جديدة" : "⚠️ خصم إداري",
+                    message: `تم تسجيل ${currentType} بمبلغ ${amount} ج.م. السبب: ${reason || 'غير محدد'}`,
+                    date: date,
+                    type: currentType === 'مكافأة' ? 'reward' : 'penalty'
+                });
+
+                // حفظ البيانات المعدلة في الـ LocalStorage
+                localStorage.setItem('nour_employees', JSON.stringify(employees));
+                localStorage.setItem('nour_notifications', JSON.stringify(notifs));
+
+                alert(`تم بنجاح! الـ ${currentType} سمعت في حساب ${name} وشيت المرتبات ✅`);
+                location.reload(); 
+            } else {
+                alert("الاسم ده مش موجود في سجلات الموظفين يا هندسة!");
+            }
+        }
+
+        function loadRecentActions() {
+            const notifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+            const container = document.getElementById('recentActions');
+            const recent = notifs.slice(-10).reverse(); // عرض آخر 10 عمليات
+            
+            if(recent.length === 0) {
+                container.innerHTML = `<p class="text-[10px] text-slate-400 text-center">لا توجد عمليات مسجلة اليوم</p>`;
+                return;
+            }
+
+            container.innerHTML = recent.map(act => {
+                // استخراج المبلغ من الرسالة المسجلة
+                const amountMatch = act.message.match(/\d+/);
+                const amountDisplay = amountMatch ? amountMatch[0] : '0';
+                
+                return `
+                <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-700">${act.to}</p>
+                        <p class="text-[8px] text-slate-400">${act.date}</p>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-[10px] font-bold ${act.type === 'reward' ? 'text-emerald-600' : 'text-red-600'}">
+                            ${act.type === 'reward' ? '+' : '-'} ${amountDisplay} ج.م
+                        </span>
+                        <p class="text-[7px] text-slate-400 italic">${act.title}</p>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+    </script>
+</body>
+</html>

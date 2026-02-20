@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>إدارة الحسابات - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style> body { font-family: 'Cairo', sans-serif; background: #f8fafc; } </style>
+</head>
+<body class="p-6 text-right font-bold italic">
+
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-10">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center border border-slate-100 active:scale-90 transition-all">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <div>
+            <h1 class="text-xl font-black text-blue-800 uppercase italic">إدارة الرواتب والإضافي</h1>
+            <p class="text-[9px] text-slate-400 font-black italic">نور للمودرن لايتينج - الحسابات الختامية</p>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto space-y-6">
+        
+        <div onclick="window.location.href='main_salaries.html'" 
+             class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-blue-50 flex flex-col items-center cursor-pointer active:scale-95 transition-all relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-2 h-full bg-blue-600"></div>
+            <div class="w-20 h-20 bg-blue-50 rounded-[2rem] flex items-center justify-center text-[#137fec] mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-icons-round text-5xl">payments</span>
+            </div>
+            <h2 class="text-lg font-black text-slate-800 italic uppercase">شيت المرتبات الأساسي</h2>
+            <p class="text-[10px] text-slate-400 font-bold mt-2 italic uppercase">القبض الأسبوعي + ترحيل السجلات</p>
+        </div>
+
+        <div onclick="window.location.href='overtime_sheet.html'" 
+             class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-blue-50 flex flex-col items-center cursor-pointer active:scale-95 transition-all relative overflow-hidden group">
+            <div class="absolute top-0 left-0 w-2 h-full bg-amber-500"></div>
+            <div class="w-20 h-20 bg-amber-50 rounded-[2rem] flex items-center justify-center text-amber-600 mb-4 group-hover:scale-110 transition-transform">
+                <span class="material-icons-round text-5xl">more_time</span>
+            </div>
+            <h2 class="text-lg font-black text-slate-800 italic uppercase">شيت حساب الإضافي</h2>
+            <p class="text-[10px] text-slate-400 font-bold mt-2 italic uppercase">السهرات المسائية (٠٦:٤٥م - ٠٧:٣٠م)</p>
+        </div>
+
+        <button onclick="approveAllSalaries()" class="w-full bg-slate-900 text-white py-5 rounded-[2rem] font-black text-sm shadow-2xl active:scale-95 transition-all italic flex items-center justify-center gap-3 mt-10">
+            <span class="material-icons-round text-emerald-400">check_circle</span>
+            اعتماد صرف الأسبوع وتصفير الحسابات
+        </button>
+
+    </main>
+
+    <script>
+        function approveAllSalaries() {
+            if(!confirm("يا مروة، هل إنتي متأكدة إنك عايزة تعتمدي صرف الأسبوع ده؟ الحركة دي هترحل الرواتب لتقويم الموظفين وتصفر السلف والحوافز للأسبوع الجديد.")) return;
+
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            let salaryHistory = JSON.parse(localStorage.getItem('nour_salary_history')) || [];
+            const today = new Date().toISOString().split('T')[0];
+
+            if(employees.length === 0) {
+                alert("مفيش موظفين مسجلين عشان نصرف لهم!");
+                return;
+            }
+
+            employees.forEach(emp => {
+                // ١. حساب الصافي قبل التصفير
+                const base = parseFloat(emp.baseSalary) || 0;
+                const bonus = parseFloat(emp.bonuses) || 0;
+                const loan = parseFloat(emp.loans) || 0;
+                const penalty = parseFloat(emp.penalties) || 0;
+                const total = base + bonus - loan - penalty;
+
+                // ٢. ترحيل السجل للأرشيف (اللي بيظهر في تقويم الموظف)
+                salaryHistory.push({
+                    name: emp.name,
+                    date: today,
+                    base: base,
+                    bonus: bonus,
+                    loan: loan,
+                    penalty: penalty,
+                    total: total
+                });
+
+                // ٣. تصفير المتغيرات للأسبوع الجديد (الأساسي بيفضل ثابت)
+                emp.bonuses = 0;
+                emp.loans = 0;
+                emp.penalties = 0;
+            });
+
+            // ٤. الحفظ النهائي في المخازن الموحدة
+            localStorage.setItem('nour_employees', JSON.stringify(employees));
+            localStorage.setItem('nour_salary_history', JSON.stringify(salaryHistory));
+
+            alert("تم الاعتماد بنجاح! الموظفين يقدروا يشوفوا تفاصيل قبضهم في التقويم دلوقتي ✅");
+            window.location.reload();
+        }
+    </script>
+
+</body>
+</html>

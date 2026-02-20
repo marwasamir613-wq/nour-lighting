@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>إدارة طلبات الموظفين - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body class="p-6 text-right">
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-8">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center border border-slate-100">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 class="text-xl font-black text-slate-800 italic">طلبات في انتظار الموافقة</h1>
+    </header>
+
+    <main id="requestsList" class="max-w-md mx-auto space-y-4">
+        </main>
+
+    <script>
+        // دالة لعرض الطلبات من المخزن
+        function displayRequests() {
+            const container = document.getElementById('requestsList');
+            // هنا بنسحب البيانات من "المخزن" اللي اسمه nour_pending_requests
+            let pendingRequests = JSON.parse(localStorage.getItem('nour_pending_requests')) || [];
+
+            if (pendingRequests.length === 0) {
+                container.innerHTML = `<div class="text-center p-10 bg-white rounded-[2rem] text-slate-400 italic font-bold border border-dashed border-slate-200">لا توجد طلبات معلقة حالياً</div>`;
+                return;
+            }
+
+            container.innerHTML = pendingRequests.map((req, index) => `
+                <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-blue-50 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500">
+                                <span class="material-icons-round">${req.type === 'سلفة' ? 'payments' : 'event_busy'}</span>
+                            </div>
+                            <div>
+                                <h4 class="font-black text-sm text-slate-800 italic">طلب ${req.type}</h4>
+                                <p class="text-[10px] text-slate-400 font-bold italic">من: ${req.name}</p>
+                            </div>
+                        </div>
+                        <span class="text-[9px] bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-black italic">${req.amount || req.duration}</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-bold italic bg-slate-50 p-2 rounded-xl">"${req.reason}"</p>
+                    <div class="flex gap-2">
+                        <button onclick="processAction(${index}, 'approve')" class="flex-1 bg-emerald-500 text-white py-3 rounded-2xl font-bold text-[11px] shadow-lg active:scale-95 transition-all">موافقة</button>
+                        <button onclick="processAction(${index}, 'reject')" class="flex-1 bg-red-500 text-white py-3 rounded-2xl font-bold text-[11px] shadow-lg active:scale-95 transition-all">رفض</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function processAction(index, action) {
+            let pendingRequests = JSON.parse(localStorage.getItem('nour_pending_requests')) || [];
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const req = pendingRequests[index];
+
+            if (action === 'approve') {
+                const empIdx = employees.findIndex(e => e.name === req.name);
+                if (empIdx !== -1) {
+                    if (req.type === 'سلفة') {
+                        employees[empIdx].loans = (parseFloat(employees[empIdx].loans) || 0) + parseFloat(req.amount);
+                    } else if (req.type === 'إجازة') {
+                        employees[empIdx].vacationBalance = (parseFloat(employees[empIdx].vacationBalance) || 21) - parseFloat(req.duration);
+                    }
+                    localStorage.setItem('nour_employees', JSON.stringify(employees));
+                    alert(`تمت الموافقة وتحديث بيانات ${req.name} ✅`);
+                }
+            }
+
+            // حذف الطلب من القائمة بعد المعالجة
+            pendingRequests.splice(index, 1);
+            localStorage.setItem('nour_pending_requests', JSON.stringify(pendingRequests));
+            displayRequests();
+        }
+
+        window.onload = displayRequests;
+    </script>
+</body>
+</html>

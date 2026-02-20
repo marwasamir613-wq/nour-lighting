@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>إشعارات طلبات الموظفين</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body class="p-6 text-right pb-20">
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-8">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center border border-slate-100">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 class="text-xl font-bold text-slate-800 italic">إشعارات الطلبات الجديدة</h1>
+    </header>
+
+    <main id="requestsContainer" class="max-w-md mx-auto space-y-4">
+        <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-orange-50 space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-orange-50 rounded-2xl flex items-center justify-center text-orange-500">
+                        <span class="material-icons-round">payments</span>
+                    </div>
+                    <div>
+                        <h4 class="font-black text-sm text-slate-800 italic">طلب سلفة مالية</h4>
+                        <p class="text-[10px] text-slate-400 font-bold italic">من: أحمد محمد حسن</p>
+                    </div>
+                </div>
+                <span class="text-[9px] bg-orange-100 text-orange-600 px-3 py-1 rounded-full font-black italic">١,٠٠٠ ج.م</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-bold leading-relaxed px-2 italic bg-slate-50 p-2 rounded-xl">"محتاج السلفة لظروف عائلية طارئة، يرجى الموافقة."</p>
+            <div class="flex gap-2">
+                <button onclick="processRequest('أحمد محمد حسن', 'سلفة', 1000, this)" class="flex-1 bg-emerald-500 text-white py-3 rounded-2xl font-bold text-[11px] shadow-lg shadow-emerald-100 active:scale-95 transition-all">موافقة</button>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-1 bg-red-500 text-white py-3 rounded-2xl font-bold text-[11px] shadow-lg shadow-red-100 active:scale-95 transition-all">رفض</button>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-[2.5rem] shadow-sm border border-blue-50 space-y-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-500">
+                        <span class="material-icons-round">event_busy</span>
+                    </div>
+                    <div>
+                        <h4 class="font-black text-sm text-slate-800 italic">طلب إجازة سنوية</h4>
+                        <p class="text-[10px] text-slate-400 font-bold italic">من: سارة محمود علي</p>
+                    </div>
+                </div>
+                <span class="text-[9px] bg-blue-100 text-blue-600 px-3 py-1 rounded-full font-black italic">يومين</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-bold leading-relaxed px-2 italic bg-slate-50 p-2 rounded-xl">"موعد إجراء عملية جراحية بسيطة لوالدتي."</p>
+            <div class="flex gap-2">
+                <button onclick="processRequest('سارة محمود علي', 'إجازة', 2, this)" class="flex-1 bg-emerald-500 text-white py-3 rounded-2xl font-bold text-[11px] shadow-lg shadow-emerald-100 active:scale-95 transition-all">موافقة</button>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-1 bg-red-500 text-white py-3 rounded-2xl font-bold text-[11px] shadow-lg shadow-red-100 active:scale-95 transition-all">رفض</button>
+            </div>
+        </div>
+    </main>
+
+    <p class="text-center text-[9px] text-slate-300 mt-10 font-bold italic">تطوير مبرمجة التطبيق: مروه سمير </p>
+
+    <script>
+        // دالة المعالجة الذكية اللي طلبتيها يا مروة
+        function processRequest(empName, type, value, btn) {
+            // ١. سحب بيانات الموظفين
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            let empIndex = employees.findIndex(e => e.name === empName);
+
+            if (empIndex !== -1) {
+                if (type === 'سلفة') {
+                    // إضافة السلفة لحسابه دايركت
+                    employees[empIndex].loans = (parseFloat(employees[empIndex].loans) || 0) + value;
+                } else if (type === 'إجازة') {
+                    // خصم الأيام من رصيد إجازاته
+                    employees[empIndex].vacationBalance = (parseFloat(employees[empIndex].vacationBalance) || 21) - value;
+                    employees[empIndex].absentDays = (parseFloat(employees[empIndex].absentDays) || 0) + value;
+                }
+
+                // ٢. حفظ التعديل في الداتا
+                localStorage.setItem('nour_employees', JSON.stringify(employees));
+
+                // ٣. إرسال إشعار للموظف
+                let notifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+                notifs.push({
+                    to: empName,
+                    title: "تم قبول طلبك ✅",
+                    message: `وافقت الإدارة على طلب ${type} الخاص بك.`,
+                    date: new Date().toLocaleDateString('ar-EG'),
+                    type: 'success'
+                });
+                localStorage.setItem('nour_notifications', JSON.stringify(notifs));
+
+                // ٤. حذف الكارت من الصفحة بعد الموافقة
+                alert(`تم تنفيذ ال${type} لـ ${empName} بنجاح!`);
+                btn.parentElement.parentElement.remove();
+            } else {
+                alert("الموظف ده مش موجود في السيستم!");
+            }
+        }
+    </script>
+</body>
+</html>

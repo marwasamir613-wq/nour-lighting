@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>بيانات الموظف - نور للإضاءة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body class="p-6 pb-20 text-right font-bold italic">
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-8">
+        <button onclick="clearAndGoBack()" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center border border-slate-100 active:scale-90 transition-all">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 id="pageTitle" class="text-xl font-black text-slate-800 italic">بيانات موظف جديد</h1>
+    </header>
+
+    <main class="max-w-md mx-auto bg-white p-8 rounded-[2.5rem] shadow-xl border border-blue-50 space-y-5">
+        <div class="flex flex-col items-center gap-3 mb-4">
+            <div id="photoPreview" class="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center border-2 border-dashed border-blue-200 text-slate-400 relative overflow-hidden">
+                <span id="uploadIcon" class="material-icons-round text-4xl">add_a_photo</span>
+                <img id="previewImg" class="hidden w-full h-full object-cover">
+                <input type="file" id="empPhoto" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer" onchange="previewFile()">
+            </div>
+            <p class="text-[10px] font-black text-slate-400 uppercase">صورة الموظف</p>
+        </div>
+
+        <div class="space-y-4">
+            <input type="text" id="empName" placeholder="الاسم الكامل" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-[#137fec] outline-none">
+            
+            <select id="empDept" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm text-slate-500 focus:ring-2 focus:ring-[#137fec] outline-none text-right">
+                <option value="">اختر القسم</option>
+                <option value="المكابس">قسم المكابس</option>
+                <option value="التجميع">قسم التجميع</option>
+                <option value="الرش">قسم الرش</option>
+                <option value="المخزن">قسم المخزن</option>
+            </select>
+
+            <input type="text" id="empJob" placeholder="المهنة (مثلاً: فني رش، مساعد..)" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-[#137fec] outline-none">
+            
+            <input type="number" id="empNationalID" placeholder="الرقم القومي (١٤ رقم)" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-[#137fec] outline-none">
+            
+            <div class="grid grid-cols-2 gap-3">
+                <input type="number" id="empAge" placeholder="السن" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm focus:ring-2 focus:ring-[#137fec] outline-none text-right">
+                <select id="empStatus" class="bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm text-slate-500 focus:ring-2 focus:ring-[#137fec] outline-none text-right">
+                    <option value="">حالة الموظف</option>
+                    <option value="نشط">نشط</option>
+                    <option value="موقوف">موقوف</option>
+                </select>
+            </div>
+
+            <select id="empType" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm text-slate-500 focus:ring-2 focus:ring-[#137fec] outline-none text-right">
+                <option value="">نوع الموظف</option>
+                <option value="عامل أساسي">عامل أساسي</option>
+                <option value="عامل غير أساسي">عامل غير أساسي</option>
+            </select>
+
+            <div class="pt-2 border-t border-slate-100">
+                <label class="text-[11px] font-black text-[#137fec] mr-2 block mb-3 italic uppercase">نظام الرواتب (مربوط بالشيت)</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <input type="number" id="salaryMonthly" placeholder="الراتب الأساسي" class="bg-blue-50 border-none p-4 rounded-2xl font-black text-xs focus:ring-2 focus:ring-[#137fec] outline-none text-right">
+                    <input type="number" id="salaryDaily" placeholder="اليومية" class="bg-emerald-50 border-none p-4 rounded-2xl font-black text-xs focus:ring-2 focus:ring-[#137fec] outline-none text-right">
+                </div>
+            </div>
+
+            <div class="space-y-1">
+                <label class="text-[10px] font-black text-slate-400 mr-2 block text-right italic uppercase">تاريخ بدء العمل</label>
+                <input type="date" id="empStartDate" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-bold text-sm text-slate-500 focus:ring-2 focus:ring-[#137fec] outline-none">
+            </div>
+        </div>
+
+        <button id="saveBtn" onclick="saveEmployeeData()" class="w-full bg-[#137fec] text-white py-4 rounded-2xl font-black text-lg shadow-lg active:scale-95 transition-all mt-6 shadow-blue-500/30">حفظ بيانات الموظف</button>
+    </main>
+
+    <script>
+        let base64Image = "";
+
+        window.onload = function() {
+            const empToEdit = localStorage.getItem('editing_now');
+            if (empToEdit) {
+                const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+                const empData = employees.find(e => e.name === empToEdit);
+                if (empData) {
+                    document.getElementById('pageTitle').innerText = "تعديل بيانات الموظف";
+                    document.getElementById('saveBtn').innerText = "حفظ التعديلات";
+                    document.getElementById('empName').value = empData.name || "";
+                    document.getElementById('empDept').value = empData.department || "";
+                    document.getElementById('empJob').value = empData.job || "";
+                    document.getElementById('empNationalID').value = empData.nationalID || "";
+                    document.getElementById('empAge').value = empData.age || "";
+                    document.getElementById('empStatus').value = empData.status || "";
+                    document.getElementById('empType').value = empData.type || "";
+                    document.getElementById('salaryMonthly').value = empData.baseSalary || 0;
+                    document.getElementById('salaryDaily').value = empData.dailyRate || 0;
+                    document.getElementById('empStartDate').value = empData.startDate || "";
+                    if (empData.photo) {
+                        base64Image = empData.photo;
+                        const preview = document.getElementById('previewImg');
+                        preview.src = empData.photo;
+                        preview.classList.remove('hidden');
+                        document.getElementById('uploadIcon').classList.add('hidden');
+                    }
+                }
+            }
+        };
+
+        function previewFile() {
+            const file = document.getElementById('empPhoto').files[0];
+            const reader = new FileReader();
+            reader.onloadend = function () {
+                const preview = document.getElementById('previewImg');
+                preview.src = reader.result;
+                base64Image = reader.result;
+                preview.classList.remove('hidden');
+                document.getElementById('uploadIcon').classList.add('hidden');
+            }
+            if (file) { reader.readAsDataURL(file); }
+        }
+
+        function saveEmployeeData() {
+            const empToEdit = localStorage.getItem('editing_now');
+            let employeesList = JSON.parse(localStorage.getItem('nour_employees')) || [];
+
+            // تجهيز البيانات للحفظ في "المخزن" (localStorage)
+            const employee = {
+                id: empToEdit ? (employeesList.find(e => e.name === empToEdit)?.id) : "emp_" + Date.now(),
+                photo: base64Image,
+                name: document.getElementById('empName').value.trim(),
+                department: document.getElementById('empDept').value,
+                job: document.getElementById('empJob').value,
+                nationalID: document.getElementById('empNationalID').value,
+                age: document.getElementById('empAge').value,
+                status: document.getElementById('empStatus').value,
+                type: document.getElementById('empType').value,
+                baseSalary: parseFloat(document.getElementById('salaryMonthly').value) || 0,
+                dailyRate: parseFloat(document.getElementById('salaryDaily').value) || 0,
+                startDate: document.getElementById('empStartDate').value,
+                
+                // --- الجزء الجديد: ربط الإجازات بالمخزن ---
+                vacationBalance: empToEdit ? (employeesList.find(e => e.name === empToEdit)?.vacationBalance ?? 21) : 21,
+                leaveDates: empToEdit ? (employeesList.find(e => e.name === empToEdit)?.leaveDates || []) : [],
+                // ----------------------------------------
+
+                loans: empToEdit ? (employeesList.find(e => e.name === empToEdit)?.loans || 0) : 0,
+                absentDays: empToEdit ? (employeesList.find(e => e.name === empToEdit)?.absentDays || 0) : 0,
+                payCycle: empToEdit ? (employeesList.find(e => e.name === empToEdit)?.payCycle || 'أسبوعي') : 'أسبوعي'
+            };
+
+            if (!employee.name || !employee.department) {
+                alert("يا مروة لازم تكتبي الاسم وتختاري القسم!");
+                return;
+            }
+
+            if (empToEdit) {
+                const index = employeesList.findIndex(e => e.name === empToEdit);
+                if (index !== -1) { employeesList[index] = employee; }
+                localStorage.removeItem('editing_now');
+            } else {
+                employeesList.push(employee);
+            }
+
+            // السطر الأهم: حفظ كل البيانات في ذاكرة الجهاز
+            localStorage.setItem('nour_employees', JSON.stringify(employeesList));
+            
+            alert("تم حفظ " + employee.name + " بنجاح في قاعدة بيانات الموقع!");
+            window.location.href = 'employee_management.html';
+        }
+
+        function clearAndGoBack() {
+            localStorage.removeItem('editing_now');
+            window.location.href = 'employee_management.html';
+        }
+    </script>
+</body>
+</html>

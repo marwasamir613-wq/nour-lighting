@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>تعديل بيانات الموظفين - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style> body { font-family: 'Cairo', sans-serif; background: #f8fafc; } </style>
+</head>
+<body class="p-4 text-right italic font-bold">
+
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-8">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center border active:scale-90 transition-all">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 class="text-xl font-black text-blue-800 uppercase italic">تعديل بيانات الموظفين</h1>
+    </header>
+
+    <main class="max-w-md mx-auto space-y-6">
+        <div id="selectionArea" class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-blue-50">
+            <label class="block text-sm mb-4 text-slate-500 italic">اختر الموظف لتعديل بياناته:</label>
+            <select id="employeeSelector" onchange="loadEmployeeData()" class="w-full bg-slate-50 border-none p-4 rounded-2xl font-black text-slate-800 focus:ring-2 focus:ring-blue-500 outline-none italic">
+                <option value="">-- اختر موظف من القائمة --</option>
+            </select>
+        </div>
+
+        <div id="editForm" class="hidden bg-white p-6 rounded-[2.5rem] shadow-xl border border-blue-50 space-y-4">
+            <div class="space-y-2">
+                <label class="text-[10px] text-slate-400 mr-2 uppercase">اسم الموظف</label>
+                <input type="text" id="editName" class="w-full bg-slate-50 p-4 rounded-2xl font-black text-slate-800 outline-none border-2 border-transparent focus:border-blue-500">
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] text-slate-400 mr-2 uppercase">الراتب الأساسي</label>
+                    <input type="number" id="editBaseSalary" class="w-full bg-slate-50 p-4 rounded-2xl font-black text-blue-600 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] text-slate-400 mr-2 uppercase">قيمة اليومية</label>
+                    <input type="number" id="editDailyRate" class="w-full bg-slate-50 p-4 rounded-2xl font-black text-blue-600 outline-none">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-2">
+                    <label class="text-[10px] text-slate-400 mr-2 uppercase">التأمينات</label>
+                    <input type="number" id="editInsurance" class="w-full bg-slate-50 p-4 rounded-2xl font-black text-red-500 outline-none">
+                </div>
+                <div class="space-y-2">
+                    <label class="text-[10px] text-slate-400 mr-2 uppercase">رصيد الإجازات</label>
+                    <input type="number" id="editVacation" class="w-full bg-slate-50 p-4 rounded-2xl font-black text-emerald-600 outline-none">
+                </div>
+            </div>
+
+            <div class="pt-4 space-y-3">
+                <button onclick="updateEmployee()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-sm shadow-lg shadow-blue-100 active:scale-95 transition-all">حفظ التعديلات الجديدة ✅</button>
+                <button onclick="hideForm()" class="w-full bg-slate-100 text-slate-400 py-3 rounded-2xl font-black text-xs">إلغاء</button>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ١. تحميل قائمة الموظفين عند فتح الصفحة
+        window.onload = function() {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const selector = document.getElementById('employeeSelector');
+            
+            employees.forEach((emp, index) => {
+                let option = document.createElement('option');
+                option.value = index;
+                option.text = emp.name;
+                selector.appendChild(option);
+            });
+        };
+
+        // ٢. تعبئة الفورم ببيانات الموظف المختار
+        function loadEmployeeData() {
+            const selector = document.getElementById('employeeSelector');
+            const editForm = document.getElementById('editForm');
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            
+            if (selector.value === "") {
+                editForm.classList.add('hidden');
+                return;
+            }
+
+            const emp = employees[selector.value];
+            document.getElementById('editName').value = emp.name;
+            document.getElementById('editBaseSalary').value = emp.baseSalary || 0;
+            document.getElementById('editDailyRate').value = emp.dailyRate || 0;
+            document.getElementById('editInsurance').value = emp.insurance || 0;
+            document.getElementById('editVacation').value = emp.vacationBalance || 21;
+
+            editForm.classList.remove('hidden');
+        }
+
+        // ٣. حفظ التعديلات في الـ LocalStorage
+        function updateEmployee() {
+            const index = document.getElementById('employeeSelector').value;
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+
+            employees[index].name = document.getElementById('editName').value;
+            employees[index].baseSalary = document.getElementById('editBaseSalary').value;
+            employees[index].dailyRate = document.getElementById('editDailyRate').value;
+            employees[index].insurance = document.getElementById('editInsurance').value;
+            employees[index].vacationBalance = document.getElementById('editVacation').value;
+
+            localStorage.setItem('nour_employees', JSON.stringify(employees));
+            
+            alert("تم تحديث بيانات " + employees[index].name + " بنجاح يا مروة! 🚀");
+            location.reload();
+        }
+
+        function hideForm() {
+            document.getElementById('editForm').classList.add('hidden');
+            document.getElementById('employeeSelector').value = "";
+        }
+    </script>
+</body>
+</html>

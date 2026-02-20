@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>التنبيهات - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body class="p-6 pb-24 text-right italic font-bold">
+
+    <header class="max-w-md mx-auto flex items-center justify-between mb-8">
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.href='home.html'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center border border-slate-100 active:scale-90 transition-all">
+                <span class="material-icons-round text-slate-600">arrow_forward</span>
+            </button>
+            <h1 class="text-xl font-black text-slate-800 italic">التنبيهات</h1>
+        </div>
+        <button onclick="clearNotifs()" class="text-[10px] text-red-500 bg-red-50 px-3 py-2 rounded-xl">مسح الكل</button>
+    </header>
+
+    <main id="notifContainer" class="max-w-md mx-auto space-y-4">
+        </main>
+
+    <script>
+        window.onload = function() {
+            loadMyNotifications();
+        };
+
+        function loadMyNotifications() {
+            const loggedInEmp = localStorage.getItem('logged_in_employee_name') || "مروه سمير حسن";
+            const allNotifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+            const container = document.getElementById('notifContainer');
+
+            // تصفية الإشعارات الخاصة بهذا الموظف فقط
+            const myNotifs = allNotifs.filter(n => n.to === loggedInEmp);
+
+            if (myNotifs.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-20 opacity-30">
+                        <span class="material-icons-round text-6xl">notifications_off</span>
+                        <p class="mt-2">لا توجد رسائل جديدة حالياً</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = myNotifs.map(n => `
+                <div class="bg-white p-5 rounded-[2rem] shadow-sm border border-blue-50 relative overflow-hidden">
+                    <div class="flex items-start gap-4">
+                        <div class="w-10 h-10 ${n.status === 'موافقة' ? 'bg-emerald-50 text-emerald-500' : 'bg-red-50 text-red-500'} rounded-2xl flex items-center justify-center">
+                            <span class="material-icons-round">${n.status === 'موافقة' ? 'check_circle' : 'error'}</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1">
+                                <h3 class="text-sm font-black text-slate-800">${n.title}</h3>
+                                <span class="text-[8px] text-slate-400">${n.date}</span>
+                            </div>
+                            <p class="text-[11px] text-slate-500 leading-relaxed font-bold">${n.message}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearNotifs() {
+            if(confirm("يا مروة، متأكدة إنك عايزة تمسحي كل الرسايل؟")) {
+                const loggedInEmp = localStorage.getItem('logged_in_employee_name') || "مروه سمير حسن";
+                let allNotifs = JSON.parse(localStorage.getItem('nour_notifications')) || [];
+                // مسح إشعارات الموظف ده بس والحفاظ على الباقي
+                allNotifs = allNotifs.filter(n => n.to !== loggedInEmp);
+                localStorage.setItem('nour_notifications', JSON.stringify(allNotifs));
+                location.reload();
+            }
+        }
+    </script>
+
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-100 px-8 py-4 pb-8 flex items-center justify-between z-50">
+        <button onclick="window.location.href='home.html'" class="flex flex-col items-center gap-1 text-slate-400"><span class="material-icons-round">dashboard</span><span class="text-[10px] font-bold">الرئيسية</span></button>
+        <button onclick="window.location.href='employee_attendance_history.html'" class="flex flex-col items-center gap-1 text-slate-400"><span class="material-icons-round">history</span><span class="text-[10px] font-bold">السجل</span></button>
+        <button onclick="window.location.href='employee_notifications.html'" class="flex flex-col items-center gap-1 text-[#137fec]"><span class="material-icons-round">notifications</span><span class="text-[10px] font-bold">تنبيهات</span></button>
+    </nav>
+</body>
+</html>

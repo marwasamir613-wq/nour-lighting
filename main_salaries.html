@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>شيت مرتبات نور - مروة سمير</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style> 
+        body { font-family: 'Cairo', sans-serif; background: #f8fafc; } 
+        .edit-input { width: 75px; background: #f1f5f9; border-radius: 8px; padding: 4px; border: 1px solid #cbd5e1; text-align: center; font-weight: 900; }
+        .cycle-select { background: #eff6ff; border: 2px solid #dbeafe; border-radius: 8px; padding: 4px; font-size: 10px; font-weight: bold; color: #1e40af; outline: none; cursor: pointer; }
+        .footer-card { border-radius: 1.5rem; padding: 1.5rem; text-align: center; transition: all 0.3s; border: 2px solid transparent; }
+        .date-input { background: #fff; border: 1px solid #dbeafe; border-radius: 10px; padding: 5px 10px; font-size: 12px; font-weight: bold; outline: none; color: #1e40af; }
+        @media print { .no-print { display: none !important; } } 
+    </style>
+</head>
+<body class="p-4 text-right italic font-bold">
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 no-print gap-4">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center border active:scale-90 transition-all"><span class="material-icons-round text-slate-600">arrow_forward</span></button>
+            <div>
+                <h1 class="text-xl font-black italic text-blue-800 uppercase">شيت مرتبات شركة نور</h1>
+                <p class="text-[10px] text-blue-500 font-bold uppercase italic">الإدارة المالية - مروة سمير</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 bg-blue-50 p-2 rounded-2xl border border-blue-100 shadow-sm">
+            <span class="text-[10px] text-blue-800 italic font-black">الفترة من:</span>
+            <input type="date" id="startDate" class="date-input" onchange="calculate()">
+            <span class="text-[10px] text-blue-800 italic font-black">إلى:</span>
+            <input type="date" id="endDate" class="date-input" onchange="calculate()">
+        </div>
+
+        <div class="flex gap-2">
+            <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-2 active:scale-95"><span class="material-icons-round text-sm">save_alt</span> حفظ PDF</button>
+            <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-2 active:scale-95"><span class="material-icons-round text-sm">print</span> طباعة</button>
+        </div>
+    </header>
+
+    <div id="salarySheetContent">
+        <main class="max-w-full mx-auto bg-white rounded-[2.5rem] shadow-xl overflow-x-auto border border-blue-100 mb-6 text-center">
+            <table class="w-full text-right text-[10px] border-collapse min-w-[1400px]">
+                <thead class="bg-blue-600 text-white font-black italic uppercase">
+                    <tr>
+                        <th class="p-5 text-right border-l border-blue-500">الموظف</th>
+                        <th class="p-5">دورة القبض</th>
+                        <th class="p-5 bg-blue-500/50">الراتب الأساسي</th>
+                        <th class="p-5">الراتب المستحق</th>
+                        <th class="p-5 bg-blue-500/30">اليومية</th>
+                        <th class="p-5">أيام الغياب</th>
+                        <th class="p-5 bg-blue-700">سعر الغياب</th>
+                        <th class="p-5">التأمينات</th>
+                        <th class="p-5 bg-blue-50/20">سلفة (يدوي)</th>
+                        <th class="p-5">جزاءات</th>
+                        <th class="p-5 bg-blue-900 text-white">الصافي النهائي</th>
+                        <th class="p-5 bg-slate-800 text-emerald-400 font-black border-r border-slate-700">متبقي السلفيات</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody" class="font-bold italic text-slate-700"></tbody>
+            </table>
+        </main>
+
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
+            <div class="footer-card bg-white border-blue-500 shadow-lg shadow-blue-100">
+                <p class="text-[10px] text-blue-500 font-black uppercase mb-1">إجمالي المستحقات</p>
+                <p id="totalBefore" class="text-xl font-black text-blue-900">0 ج.م</p>
+            </div>
+            <div class="footer-card bg-white border-red-500 shadow-lg shadow-red-100">
+                <p class="text-[10px] text-red-500 font-black uppercase mb-1">إجمالي الخصومات</p>
+                <p id="totalDeductions" class="text-xl font-black text-red-700">0 ج.م</p>
+            </div>
+            <div class="footer-card bg-blue-900 text-white shadow-2xl shadow-blue-300 border-none">
+                <p class="text-[10px] text-white/70 font-bold uppercase mb-1">صافي المنصرف العام</p>
+                <p id="totalFinal" class="text-xl font-black underline decoration-double">0 ج.م</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function setInitialDates() {
+            const today = new Date();
+            document.getElementById('startDate').value = today.toISOString().split('T')[0];
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+        }
+
+        function calculate() {
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const attendanceLogs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+            const startDateStr = document.getElementById('startDate').value;
+            const endDateStr = document.getElementById('endDate').value;
+            
+            if(!startDateStr || !endDateStr) return;
+            const startDate = new Date(startDateStr);
+            const endDate = new Date(endDateStr);
+            const today = new Date();
+            today.setHours(0,0,0,0);
+
+            let html = '';
+
+            employees.forEach((emp, index) => {
+                // 1. حساب الحضور الفعلي بالـ QR
+                const presentLogs = attendanceLogs.filter(log => {
+                    const logDate = new Date(log.date);
+                    return log.name === emp.name && log.type === 'حضور' && logDate >= startDate && logDate <= endDate;
+                });
+                const presentCount = [...new Set(presentLogs.map(l => l.date))].length;
+
+                // 2. حساب الأيام المنقضية (فقط الأيام اللي عدت عشان ميحسبش غياب مستقبلي)
+                let elapsedDays = 0;
+                let tempDate = new Date(startDate);
+                while(tempDate <= endDate) {
+                    if(tempDate <= today) elapsedDays++;
+                    tempDate.setDate(tempDate.getDate() + 1);
+                }
+
+                // 3. الغياب = الأيام اللي فاتت - اللي بصم فيها
+                const autoAbsentDays = Math.max(0, elapsedDays - presentCount);
+
+                const baseSalary = parseFloat(emp.baseSalary) || 0;
+                const dailyRate = parseFloat(emp.dailyRate) || 0;
+                const insurance = parseFloat(emp.insurance) || 0;
+                const penalties = parseFloat(emp.penalties) || 0;
+                const bonuses = parseFloat(emp.bonuses) || 0;
+                const totalLoansBalance = parseFloat(emp.loans) || 0;
+                const cycle = emp.payCycle || 'أسبوعي';
+
+                let periodSalary = baseSalary;
+                if (cycle === 'أسبوعي') periodSalary = baseSalary / 4;
+                if (cycle === 'أسبوعين') periodSalary = baseSalary / 2;
+
+                const absencePrice = autoAbsentDays * dailyRate;
+                const initialNet = (periodSalary + bonuses) - absencePrice - insurance - penalties;
+
+                html += `
+                <tr class="border-b border-blue-50 hover:bg-blue-50/40 transition-all font-bold italic text-center" 
+                    data-name="${emp.name}" data-period-salary="${periodSalary}" data-bonus="${bonuses}"
+                    data-absence="${absencePrice}" data-insurance="${insurance}" data-penalties="${penalties}" 
+                    data-initial-net="${initialNet}" data-loans-bal="${totalLoansBalance}">
+                    <td class="p-5 font-black text-slate-800 text-right border-l">${emp.name}</td>
+                    <td class="p-5 text-center">
+                        <select class="cycle-select" onchange="updateCycle(${index}, this.value)">
+                            <option value="أسبوعي" ${cycle === 'أسبوعي' ? 'selected' : ''}>أسبوعي</option>
+                            <option value="أسبوعين" ${cycle === 'أسبوعين' ? 'selected' : ''}>أسبوعين</option>
+                            <option value="شهري" ${cycle === 'شهري' ? 'selected' : ''}>شهري</option>
+                        </select>
+                    </td>
+                    <td class="p-5 text-blue-400">${baseSalary.toLocaleString()}</td>
+                    <td class="p-5 font-black text-blue-700">${periodSalary.toLocaleString()}</td>
+                    <td class="p-5 text-blue-500">${dailyRate.toLocaleString()}</td>
+                    <td class="p-5 text-red-500">${autoAbsentDays}</td>
+                    <td class="p-5 bg-red-50 text-red-600">${absencePrice.toLocaleString()}</td>
+                    <td class="p-5">${insurance.toLocaleString()}</td>
+                    <td class="p-5 bg-blue-50">
+                        <input type="number" class="edit-input" id="loan-in-${index}" value="0" oninput="updateLiveTotals()">
+                    </td>
+                    <td class="p-5">${penalties.toLocaleString()}</td>
+                    <td class="p-5 bg-blue-900 text-white font-black" id="net-${index}">${initialNet.toLocaleString()} ج.م</td>
+                    <td class="p-5 bg-slate-800 text-emerald-400 font-black" id="rem-${index}">${totalLoansBalance.toLocaleString()} ج.م</td>
+                </tr>`;
+            });
+            document.getElementById('tbody').innerHTML = html;
+            updateLiveTotals();
+        }
+
+        function updateLiveTotals() {
+            let sumEarned = 0, sumDeductions = 0, sumNet = 0;
+            document.querySelectorAll('#tbody tr').forEach((row, index) => {
+                const initialNet = parseFloat(row.dataset.initialNet) || 0;
+                const totalLoansBal = parseFloat(row.dataset.loansBal) || 0;
+                const loanInput = document.getElementById(`loan-in-${index}`);
+                const manualLoan = parseFloat(loanInput.value) || 0;
+                
+                // الخصم اللحظي من الصافي ومن متبقي السلف
+                const finalNet = initialNet - manualLoan;
+                const finalRemLoan = Math.max(0, totalLoansBal - manualLoan);
+
+                document.getElementById(`net-${index}`).innerText = finalNet.toLocaleString() + " ج.م";
+                document.getElementById(`rem-${index}`).innerText = finalRemLoan.toLocaleString() + " ج.م";
+                
+                sumEarned += (parseFloat(row.dataset.periodSalary) + parseFloat(row.dataset.bonus));
+                sumDeductions += (parseFloat(row.dataset.absence) + parseFloat(row.dataset.insurance) + parseFloat(row.dataset.penalties) + manualLoan);
+                sumNet += finalNet;
+            });
+            document.getElementById('totalBefore').innerText = sumEarned.toLocaleString() + " ج.م";
+            document.getElementById('totalDeductions').innerText = sumDeductions.toLocaleString() + " ج.م";
+            document.getElementById('totalFinal').innerText = sumNet.toLocaleString() + " ج.م";
+        }
+
+        function updateCycle(index, val) {
+            let employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            employees[index].payCycle = val;
+            localStorage.setItem('nour_employees', JSON.stringify(employees));
+            calculate();
+        }
+
+        function downloadPDF() {
+            const opt = { margin: 0.1, filename: 'مرتبات_نور.pdf', html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' } };
+            html2pdf().set(opt).from(document.getElementById('salarySheetContent')).save();
+        }
+
+        window.onload = function() { setInitialDates(); calculate(); };
+    </script>
+</body>
+</html>

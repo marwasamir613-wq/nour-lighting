@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>شيت المرتبات المطور - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style> 
+        body { font-family: 'Cairo', sans-serif; background: #f8fafc; } 
+        .edit-input { width: 55px; background: #f1f5f9; border-radius: 6px; padding: 2px; border: none; text-align: center; font-weight: 900; }
+        @media print { .no-print { display: none !important; } } 
+    </style>
+</head>
+<body class="p-4 text-right italic font-bold">
+    <header class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center mb-8 no-print gap-4">
+        <div class="flex items-center gap-3">
+            <button onclick="window.location.href='salaries_calculation.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center border active:scale-90">
+                <span class="material-icons-round text-slate-600">arrow_forward</span>
+            </button>
+            <div>
+                <h1 class="text-xl font-black italic text-blue-800">شيت المرتبات الرسمي (الأزرق)</h1>
+                <p class="text-[10px] text-blue-500 font-bold uppercase">شركة نور للإضاءة الحديثة</p>
+            </div>
+        </div>
+
+        <div class="flex gap-2 bg-white p-3 rounded-2xl shadow-sm border border-blue-50">
+            <input type="date" id="start" class="bg-slate-50 p-2 rounded-xl text-xs font-black border-none outline-none">
+            <input type="date" id="end" class="bg-slate-50 p-2 rounded-xl text-xs font-black border-none outline-none">
+            <button onclick="calculate()" class="bg-blue-600 text-white px-5 py-2 rounded-xl text-[10px] font-black italic active:scale-95">تحديث الحسابات</button>
+        </div>
+
+        <div class="flex gap-2">
+            <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-2 active:scale-95">
+                <span class="material-icons-round text-sm">save_alt</span> حفظ PDF للجهاز
+            </button>
+            <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-[10px] font-black shadow-lg flex items-center gap-2 active:scale-95">
+                <span class="material-icons-round text-sm">print</span> طباعة فورية
+            </button>
+        </div>
+    </header>
+
+    <div id="pdfContent">
+        <main class="max-w-full mx-auto bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-blue-100">
+            <table class="w-full text-right text-[10px] border-collapse">
+                <thead class="bg-blue-600 text-white font-black italic uppercase">
+                    <tr>
+                        <th class="p-4">الموظف</th>
+                        <th class="p-4">نوع القبض</th>
+                        <th class="p-4">الأساسي</th>
+                        <th class="p-4">اليومية</th>
+                        <th class="p-4">غياب</th>
+                        <th class="p-4">نص يوم</th>
+                        <th class="p-4">سلف</th>
+                        <th class="p-4">حوافز</th>
+                        <th class="p-4">جزاءات</th>
+                        <th class="p-4 bg-blue-700">توتال أساسي</th>
+                        <th class="p-4 bg-red-600">توتال خصم</th>
+                        <th class="p-4 bg-blue-900 text-white">الصافي النهائي</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody" class="font-bold italic"></tbody>
+            </table>
+        </main>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            const element = document.getElementById('pdfContent');
+            const opt = {
+                margin: 0.3,
+                filename: 'مرتبات_شركة_نور.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
+            };
+            html2pdf().set(opt).from(element).save();
+        }
+
+        function calculate() {
+            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+            const employees = JSON.parse(localStorage.getItem('noor_employees')) || [];
+            const startDate = document.getElementById('start').value;
+            const endDate = document.getElementById('end').value;
+
+            if(!startDate || !endDate) return;
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            let html = '';
+            employees.forEach(emp => {
+                const empLogs = logs.filter(l => {
+                    const d = new Date(l.date);
+                    return l.name === emp.name && l.type === 'حضور' && d >= start && d <= end;
+                });
+
+                let halfDays = 0, fullDays = 0;
+                empLogs.forEach(l => {
+                    const h = parseInt(l.time.split(':')[0]);
+                    if (h >= 10 && h <= 14) halfDays++; // حساب نص يوم
+                    else if (h < 10) fullDays++; // حساب يوم كامل
+                });
+
+                const daily = parseFloat(emp.dailyRate) || 0;
+                const baseTotal = (fullDays * daily) + (halfDays * daily * 0.5);
+                
+                // جلب السلف المسجلة من الداش بورد
+                const loans = parseFloat(emp.loans) || 0; 
+                const penalties = parseFloat(emp.penalties) || 0;
+                const bonuses = parseFloat(emp.bonuses) || 0;
+                const absentDeduction = (emp.absentDays || 0) * daily;
+
+                const totalDeductions = loans + penalties + absentDeduction;
+                const final = (baseTotal + bonuses) - totalDeductions;
+
+                html += `<tr class="border-b border-blue-50 hover:bg-blue-50/40 transition-all">
+                    <td class="p-4 font-black text-slate-800">${emp.name}</td>
+                    <td class="p-4 text-[8px] text-blue-600">أسبوعي</td>
+                    <td class="p-4 text-slate-400">${emp.baseSalary || 0}</td>
+                    <td class="p-4 text-blue-500 font-black">${daily}</td>
+                    <td class="p-4 text-red-500 font-black">${emp.absentDays || 0}</td>
+                    <td class="p-4 text-amber-500 font-black">${halfDays}</td>
+                    <td class="p-4"><input class="edit-input" value="${loans}"></td>
+                    <td class="p-4"><input class="edit-input text-emerald-600" value="${bonuses}"></td>
+                    <td class="p-4"><input class="edit-input text-red-600" value="${penalties}"></td>
+                    <td class="p-4 bg-blue-50/50 text-slate-700">${baseTotal.toLocaleString()}</td>
+                    <td class="p-4 bg-red-50/50 text-red-700">${totalDeductions.toLocaleString()}</td>
+                    <td class="p-4 bg-blue-50 font-black text-blue-800 text-[12px] underline decoration-double">${final.toLocaleString()} ج.م</td>
+                </tr>`;
+            });
+            document.getElementById('tbody').innerHTML = html || '<tr><td colspan="12" class="p-10 text-center">اختاري التاريخ وتحديث</td></tr>';
+        }
+
+        window.onload = () => {
+            const today = new Date();
+            const lastWeek = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            document.getElementById('end').value = today.toISOString().split('T')[0];
+            document.getElementById('start').value = lastWeek.toISOString().split('T')[0];
+            calculate();
+        };
+    </script>
+</body>
+</html>

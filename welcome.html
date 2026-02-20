@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شركة نور للإضاءة الحديثة</title>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="نور">
+    <link rel="apple-touch-icon" href="a.png.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Cairo', sans-serif; 
+            background-color: #ffffff;
+            overflow: hidden;
+        }
+        .fade-in {
+            animation: fadeIn 1.5s ease-in forwards;
+        }
+        .logo-zoom {
+            animation: zoomIn 3s infinite alternate;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes zoomIn {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+    <div class="text-center space-y-8 fade-in">
+        <div class="w-64 h-64 mx-auto flex items-center justify-center bg-white rounded-3xl shadow-sm p-4">
+            <img 
+                src="a.png.png" 
+                alt="Logo" 
+                class="w-full h-full object-contain logo-zoom"
+                onerror="this.src='a.png'; this.onerror=function(){this.src='https://cdn-icons-png.flaticon.com/512/4303/4303472.png'};"
+            />
+        </div>
+
+        <div class="space-y-3 px-6">
+            <h1 class="text-3xl font-black text-slate-900 italic leading-tight">شركة نور للإضاءة الحديثة</h1>
+            <p class="text-xl font-bold text-slate-500 italic">ترحب بكم</p>
+        </div>
+
+        <div class="flex justify-center gap-2 mt-10">
+            <div class="w-3 h-3 bg-[#137fec] rounded-full animate-bounce"></div>
+            <div class="w-3 h-3 bg-[#137fec] rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+            <div class="w-3 h-3 bg-[#137fec] rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+        </div>
+    </div>
+
+    <script>
+        // التحويل التلقائي بعد 3 ثواني إلى الصفحة الرئيسية
+        setTimeout(function() {
+            window.location.href = 'index.html';
+        }, 3000);
+    </script>
+</body>
+</html>

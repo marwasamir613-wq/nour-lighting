@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>سجل حضور الموظف - نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }</style>
+</head>
+<body class="p-6 text-right pb-20 font-bold italic">
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-6">
+        <button onclick="window.location.href='all_employees.html'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center active:scale-90">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <div>
+            <h1 id="empNameHeader" class="text-lg font-black text-slate-800">جاري التحميل...</h1>
+            <p id="totalAbsenceText" class="text-[10px] text-red-500 font-bold italic">إجمالي الغيابات: 0 أيام</p>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto space-y-6">
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-blue-50">
+            <div class="flex items-center justify-between mb-4">
+                <h3 id="monthYearText" class="font-black text-sm text-[#137fec] uppercase italic">فبراير ٢٠٢٦</h3>
+                <div class="flex gap-2">
+                    <span class="material-icons-round text-slate-300">calendar_today</span>
+                </div>
+            </div>
+            <div class="grid grid-cols-7 gap-2 text-center text-[10px] font-black text-slate-400 mb-2 uppercase">
+                <div>جمعة</div><div>خميس</div><div>أربعاء</div><div>ثلاثاء</div><div>اثنين</div><div>أحد</div><div>سبت</div>
+            </div>
+            <div id="calendarGrid" class="grid grid-cols-7 gap-2 text-center"></div>
+        </div>
+
+        <section class="space-y-3">
+            <h3 class="text-[11px] font-black px-2 text-slate-700 uppercase italic">كشف غيابات الشهر:</h3>
+            <div id="absenceList" class="space-y-3">
+                </div>
+        </section>
+    </main>
+
+    <p class="text-center text-[9px] text-slate-300 mt-10 font-black uppercase italic">نظام شركة نور - إدارة مروة سمير</p>
+
+    <script>
+        function loadHistory() {
+            const empName = localStorage.getItem('view_history_for');
+            if (!empName) {
+                alert("يرجى اختيار موظف أولاً");
+                window.location.href = 'all_employees.html';
+                return;
+            }
+
+            document.getElementById('empNameHeader').innerText = `سجل: ${empName}`;
+            
+            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = now.getMonth(); // الشهر الحالي (0-11)
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            let calendarHtml = '';
+            let absenceHtml = '';
+            let absenceCount = 0;
+
+            for (let d = 1; d <= daysInMonth; d++) {
+                const dayStr = d < 10 ? '0'+d : d;
+                const monthStr = (month + 1) < 10 ? '0'+(month + 1) : (month + 1);
+                const fullDate = `${year}-${monthStr}-${dayStr}`;
+                
+                // البحث في السجلات لو الموظف حضر (من خلال السكانر)
+                const isPresent = logs.some(l => l.name === empName && l.date === fullDate && l.type === 'حضور');
+                
+                if (isPresent) {
+                    calendarHtml += `<div class="p-2 text-[10px] font-black bg-emerald-50 text-emerald-600 rounded-lg border border-emerald-100">${d}</div>`;
+                } else {
+                    // لو اليوم عدى ومفيش حضور يبقى غياب (بشرط ميكونش يوم جمعة مثلاً لو المصنع أجازة)
+                    calendarHtml += `<div class="p-2 text-[10px] font-black bg-red-50 text-red-600 rounded-lg border border-red-100">${d}</div>`;
+                    absenceCount++;
+                    absenceHtml += `
+                        <div class="bg-white p-4 rounded-[1.5rem] border border-red-100 flex items-center gap-3">
+                            <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-500">
+                                <span class="material-icons-round">event_busy</span>
+                            </div>
+                            <div>
+                                <p class="font-black text-[10px] text-slate-800 uppercase italic">${fullDate}</p>
+                                <p class="text-[9px] text-red-400 font-bold">غياب مسجل في السيستم</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            document.getElementById('calendarGrid').innerHTML = calendarHtml;
+            document.getElementById('absenceList').innerHTML = absenceHtml || '<p class="text-center text-slate-400 text-[10px]">لا يوجد غيابات هذا الشهر!</p>';
+            document.getElementById('totalAbsenceText').innerText = `إجمالي الغيابات: ${absenceCount} أيام`;
+        }
+
+        window.onload = loadHistory;
+    </script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>تقارير شركة نور - مروة سمير</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .filter-btn { transition: all 0.3s; cursor: pointer; border: 2px solid #f1f5f9; }
+        .filter-btn.active { background-color: #137fec; color: white; border-color: #137fec; box-shadow: 0 4px 12px rgba(19, 127, 236, 0.3); }
+        .invoice-card { background: white; border-radius: 2.5rem; border: 1px solid #e2e8f0; position: relative; }
+        .invoice-card::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 8px; background: #137fec; border-radius: 2.5rem 2.5rem 0 0; }
+        .hidden-row { display: none !important; }
+        @media print { .no-print { display: none !important; } .invoice-card { border: none; box-shadow: none; width: 100% !important; padding: 0; } }
+    </style>
+</head>
+<body class="p-4 pb-24 text-right italic font-bold text-slate-800">
+
+    <header class="max-w-md mx-auto flex items-center justify-between mb-8 no-print">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow flex items-center justify-center active:scale-90 transition-all border border-blue-50">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 class="text-lg font-black italic uppercase">تقارير المصروفات الذكية</h1>
+        <button onclick="window.print()" class="w-10 h-10 bg-red-600 text-white rounded-xl shadow-lg flex items-center justify-center active:scale-90">
+            <span class="material-icons-round">picture_as_pdf</span>
+        </button>
+    </header>
+
+    <main class="max-w-md mx-auto space-y-6">
+        
+        <div class="bg-white p-6 rounded-[2.5rem] shadow-sm border border-blue-50 space-y-4 no-print text-center">
+            <p class="text-[10px] text-blue-500 uppercase tracking-widest font-black italic">نظام جرد مصروفات نور</p>
+            <div class="grid grid-cols-2 gap-3">
+                <input type="date" id="startDate" onchange="calculateRealData()" class="bg-slate-50 p-3 rounded-2xl text-[10px] font-bold text-blue-600 outline-none border border-slate-100">
+                <input type="date" id="endDate" onchange="calculateRealData()" class="bg-slate-50 p-3 rounded-2xl text-[10px] font-bold text-blue-600 outline-none border border-slate-100">
+            </div>
+            
+            <div class="flex flex-wrap gap-2 justify-center pt-2">
+                <button onclick="updateReport('salaries', this)" class="filter-btn active px-4 py-2 rounded-full text-[9px] font-black italic">مرتبات</button>
+                <button onclick="updateReport('overtime', this)" class="filter-btn active px-4 py-2 rounded-full text-[9px] font-black italic">سهرات</button>
+                <button onclick="updateReport('bonuses', this)" class="filter-btn active px-4 py-2 rounded-full text-[9px] font-black italic">حوافز</button>
+                <button onclick="updateReport('penalties', this)" class="filter-btn active px-4 py-2 rounded-full text-[9px] font-black italic">سلف/جزاء</button>
+            </div>
+        </div>
+
+        <div id="reportSheet" class="invoice-card p-8 shadow-2xl space-y-8">
+            <div class="flex justify-between items-start border-b border-slate-100 pb-6">
+                <div>
+                    <h2 class="text-sm font-black italic uppercase leading-tight text-slate-800">بيان مصروفات مجمع</h2>
+                    <p id="periodDisplay" class="text-[8px] text-[#137fec] font-bold uppercase tracking-widest italic mt-1">يتم التحميل...</p>
+                </div>
+                <div class="text-left font-black text-[10px] text-blue-600 italic">شركة نور</div>
+            </div>
+
+            <div class="space-y-4 text-xs font-bold italic">
+                <div id="row-salaries" class="flex justify-between items-center bg-slate-50/50 p-4 rounded-2xl border border-slate-100/50">
+                    <span class="text-slate-500">إجمالي المرتبات الأساسية</span>
+                    <span id="val-salaries" class="text-slate-800 font-black tracking-tighter">0 ج.م</span>
+                </div>
+                <div id="row-overtime" class="flex justify-between items-center bg-blue-50/30 p-4 rounded-2xl border border-blue-100/20">
+                    <span class="text-slate-500">إجمالي قيمة السهرات (+)</span>
+                    <span id="val-overtime" class="text-blue-600 font-black tracking-tighter">0 ج.م</span>
+                </div>
+                <div id="row-bonuses" class="flex justify-between items-center bg-emerald-50/30 p-4 rounded-2xl border border-emerald-100/20">
+                    <span class="text-slate-500">إجمالي الحوافز الممنوحة (+)</span>
+                    <span id="val-bonuses" class="text-emerald-600 font-black tracking-tighter">0 ج.م</span>
+                </div>
+                <div id="row-penalties" class="flex justify-between items-center bg-red-50/30 p-4 rounded-2xl border border-red-100/20">
+                    <span class="text-red-400">إجمالي السلف والجزاءات (-)</span>
+                    <span id="val-penalties" class="text-red-600 font-black tracking-tighter">0 ج.م</span>
+                </div>
+            </div>
+
+            <div class="pt-6 border-t-2 border-dashed border-slate-200 flex justify-between items-center">
+                <p class="text-sm font-black text-slate-800 italic uppercase">الصافي النهائي للمنصرف:</p>
+                <p id="grandTotal" class="text-2xl font-black text-[#137fec] italic tracking-tighter">0 <span class="text-[10px]">ج.م</span></p>
+            </div>
+            
+            <div class="grid grid-cols-2 gap-8 pt-10 text-center text-[9px] font-black italic opacity-50 no-print">
+                <div class="border-t border-slate-300 pt-2">إمضاء المدير المسؤول</div>
+                <div class="border-t border-slate-300 pt-2">إمضاء الحسابات</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let realPrices = { salaries: 0, overtime: 0, bonuses: 0, penalties: 0 };
+
+        window.onload = function() {
+            // ضبط تاريخ البداية (أول الشهر) والنهاية (اليوم) تلقائياً
+            const today = new Date();
+            const firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = firstOfMonth.toISOString().split('T')[0];
+            
+            calculateRealData();
+        };
+
+        function calculateRealData() {
+            // سحب كل البيانات من المخزن الموحد
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+            
+            const startStr = document.getElementById('startDate').value;
+            const endStr = document.getElementById('endDate').value;
+            const start = new Date(startStr);
+            const end = new Date(endStr);
+            end.setHours(23, 59, 59);
+
+            document.getElementById('periodDisplay').innerText = `عن الفترة من ${startStr} إلى ${endStr}`;
+
+            let totalSals = 0; 
+            let totalBon = 0; 
+            let totalLoans = 0; 
+            let totalOT = 0;
+
+            employees.forEach(emp => {
+                // ١. جمع المرتبات الأساسية للمصنع كله
+                totalSals += parseFloat(emp.baseSalary) || 0;
+                
+                // ٢. جمع السلف والجزاءات المسجلة في ملف كل موظف (سلفة أحمد الـ 1000 ج.م محسوبة هنا)
+                totalLoans += parseFloat(emp.loans) || 0;
+                totalLoans += parseFloat(emp.penalties) || 0;
+
+                // ٣. حساب السهرات اللي حصلت في الفترة المحددة في التقويم بس
+                const myOT = logs.filter(l => {
+                    const logDate = new Date(l.date);
+                    return l.name === emp.name && l.dayStatus === "يوم ونصف" && logDate >= start && logDate <= end;
+                });
+                const daily = parseFloat(emp.dailyRate) || 0;
+                totalOT += myOT.length * (daily * 0.5);
+
+                // ٤. جمع الحوافز
+                totalBon += parseFloat(emp.bonuses) || 0;
+            });
+
+            // تحديث الأرقام الحقيقية
+            realPrices.salaries = totalSals;
+            realPrices.overtime = totalOT;
+            realPrices.bonuses = totalBon;
+            realPrices.penalties = totalLoans;
+
+            // عرض الأرقام في الواجهة
+            document.getElementById('val-salaries').innerText = realPrices.salaries.toLocaleString() + " ج.م";
+            document.getElementById('val-overtime').innerText = "+ " + realPrices.overtime.toLocaleString() + " ج.م";
+            document.getElementById('val-bonuses').innerText = "+ " + realPrices.bonuses.toLocaleString() + " ج.m";
+            document.getElementById('val-penalties').innerText = "- " + realPrices.penalties.toLocaleString() + " ج.م";
+
+            calculateFinalTotal();
+        }
+
+        function updateReport(type, btn) {
+            btn.classList.toggle('active');
+            document.getElementById('row-' + type).classList.toggle('hidden-row');
+            calculateFinalTotal();
+        }
+
+        function calculateFinalTotal() {
+            let total = 0;
+            // حساب الإجمالي بناءً على الصفوف الظاهرة فقط (الفلتر)
+            if (!document.getElementById('row-salaries').classList.contains('hidden-row')) total += realPrices.salaries;
+            if (!document.getElementById('row-overtime').classList.contains('hidden-row')) total += realPrices.overtime;
+            if (!document.getElementById('row-bonuses').classList.contains('hidden-row')) total += realPrices.bonuses;
+            if (!document.getElementById('row-penalties').classList.contains('hidden-row')) total -= realPrices.penalties;
+            
+            document.getElementById('grandTotal').innerHTML = total.toLocaleString() + ' <span class="text-[10px]">ج.م</span>';
+        }
+    </script>
+</body>
+</html>

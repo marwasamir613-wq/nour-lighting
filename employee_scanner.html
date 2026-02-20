@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ماسح الحضور - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #0f172a; }
+        #reader { border: none !important; }
+        #reader__dashboard_section_csr button {
+            background: #137fec !important;
+            color: white !important;
+            padding: 10px 20px !important;
+            border-radius: 12px !important;
+            font-family: 'Cairo', sans-serif !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-md bg-white/10 backdrop-blur-md p-6 rounded-[2.5rem] mb-6 text-center border border-white/20">
+        <h1 class="text-2xl font-black text-white italic">ماسح حضور الموظفين</h1>
+        <p id="empGreeting" class="text-blue-300 font-bold mt-2">أهلاً بك .. جاري التحميل</p>
+    </div>
+
+    <div class="relative w-full max-w-md aspect-square bg-black rounded-[3rem] overflow-hidden border-4 border-[#137fec] shadow-2xl">
+        <div id="reader" class="w-full"></div>
+    </div>
+
+    <button onclick="window.location.href='index.html'" class="mt-8 text-white/50 font-bold flex items-center gap-2">
+        <span>الرجوع للرئيسية</span>
+    </button>
+
+    <script>
+        // التأكد إن الموظف مسجل دخول باسمه الأول
+        const loggedInUser = localStorage.getItem('logged_in_employee_name');
+        if (!loggedInUser) {
+            alert("عفواً، يجب تسجيل الدخول أولاً!");
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('empGreeting').innerText = `يا هلا يا ${loggedInUser}، وجه الكاميرا للكود`;
+        }
+
+        // تشغيل الماسح
+        const html5QrCode = new Html5Qrcode("reader");
+        const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+
+        html5QrCode.start({ facingMode: "environment" }, config, (decodedText) => {
+            // لو قفلنا الكود بكلمة سر معينة (مثلاً كلمة NOUR_OFFICE)
+            if (decodedText === "NOUR_OFFICE") { 
+                saveAttendance(loggedInUser);
+                html5QrCode.stop(); // وقف الكاميرا بعد النجاح
+            } else {
+                alert("كود غير صحيح! تأكد من مسح كود شركة نور");
+            }
+        });
+
+        function saveAttendance(name) {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('ar-EG');
+            
+            // تسجيل في الذاكرة (لحد ما نربط بجوجل شيت)
+            let records = JSON.parse(localStorage.getItem('attendance_records')) || [];
+            records.push({
+                name: name,
+                time: timeString,
+                date: now.toLocaleDateString('ar-EG')
+            });
+            localStorage.setItem('attendance_records', JSON.stringify(records));
+
+            // رسالة نجاح
+            alert(`تم تسجيل حضورك بنجاح يا ${name} في تمام الساعة ${timeString}`);
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

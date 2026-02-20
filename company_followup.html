@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>حركة الموظفين اليوم - نور للإضاءة</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f8fafc; }
+        .dept-tab { transition: all 0.3s; cursor: pointer; border: 2px solid transparent; }
+        .dept-tab.active { background: white; border-color: #137fec; transform: translateY(-5px); box-shadow: 0 10px 20px rgba(19, 127, 236, 0.1); }
+        .active-circle { outline: 4px solid rgba(19, 127, 236, 0.1); transform: scale(1.05); }
+        .worker-card { animation: slideUp 0.4s ease; transition: 0.3s; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="pb-24 text-right italic font-bold">
+
+    <header class="bg-[#137fec] pt-10 pb-24 px-6 rounded-b-[3.5rem] shadow-xl relative z-0 text-white">
+        <div class="max-w-md mx-auto flex flex-col items-center space-y-4">
+            <div class="w-full flex justify-between items-center mb-2">
+                <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center border border-white/20 active:scale-90">
+                    <span class="material-icons-round">arrow_forward</span>
+                </button>
+                <span class="material-icons-round text-white/20 text-3xl">visibility</span>
+            </div>
+            <div class="text-center">
+                <h1 class="font-black text-xl italic uppercase leading-tight">متابعة الأقسام والإنتاج</h1>
+                <h2 class="text-md font-bold text-blue-100 italic">شركة نور - مروة سمير</h2>
+            </div>
+        </div>
+    </header>
+
+    <main class="px-5 -mt-16 max-w-md mx-auto space-y-10 relative z-10">
+        <div class="grid grid-cols-4 gap-2">
+            <div onclick="selectDept('المكابس')" id="tab-المكابس" class="dept-tab active bg-white p-4 rounded-2xl text-center shadow-lg border border-slate-50">
+                <span class="material-icons-round text-slate-700 text-xl">settings_suggest</span>
+                <p class="text-[8px] font-black mt-1 italic uppercase">المكابس</p>
+            </div>
+            <div onclick="selectDept('التجميع')" id="tab-التجميع" class="dept-tab bg-white p-4 rounded-2xl text-center shadow-lg border border-slate-50">
+                <span class="material-icons-round text-blue-600 text-xl">precision_manufacturing</span>
+                <p class="text-[8px] font-black mt-1 italic uppercase">التجميع</p>
+            </div>
+            <div onclick="selectDept('الرش')" id="tab-الرش" class="dept-tab bg-white p-4 rounded-2xl text-center shadow-lg border border-slate-50">
+                <span class="material-icons-round text-orange-500 text-xl">format_paint</span>
+                <p class="text-[8px] font-black mt-1 italic uppercase">الرش</p>
+            </div>
+            <div onclick="selectDept('المخزن')" id="tab-المخزن" class="dept-tab bg-white p-4 rounded-2xl text-center shadow-lg border border-slate-50">
+                <span class="material-icons-round text-purple-600 text-xl">inventory_2</span>
+                <p class="text-[8px] font-black mt-1 italic uppercase">المخزن</p>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center space-y-6">
+            <div class="grid grid-cols-2 gap-5 w-full">
+                <div id="presentCircle" onclick="showStatus('present')" class="bg-white p-8 rounded-[3rem] shadow-xl border border-emerald-50 text-center flex flex-col items-center cursor-pointer transition-all">
+                    <div class="w-16 h-16 bg-emerald-50 rounded-[1.5rem] mb-3 flex items-center justify-center text-emerald-600">
+                        <span class="material-icons-round text-4xl">how_to_reg</span>
+                    </div>
+                    <p class="text-[11px] font-black text-slate-400 italic uppercase">الحاضرين</p>
+                    <p id="presentCount" class="text-3xl font-black text-emerald-500 italic">0</p>
+                </div>
+                
+                <div id="absentCircle" onclick="showStatus('absent')" class="bg-white p-8 rounded-[3rem] shadow-xl border border-red-50 text-center flex flex-col items-center cursor-pointer transition-all">
+                    <div class="w-16 h-16 bg-red-50 rounded-[1.5rem] mb-3 flex items-center justify-center text-red-500">
+                        <span class="material-icons-round text-4xl">person_off</span>
+                    </div>
+                    <p class="text-[11px] font-black text-slate-400 italic uppercase">الغايبين</p>
+                    <p id="absentCount" class="text-3xl font-black text-red-500 italic">0</p>
+                </div>
+            </div>
+
+            <div id="namesList" class="grid grid-cols-2 gap-4 w-full pt-4"></div>
+        </div>
+    </main>
+
+    <script>
+        let currentDept = 'المكابس';
+        let currentMode = 'present';
+
+        function selectDept(deptId) {
+            currentDept = deptId;
+            document.querySelectorAll('.dept-tab').forEach(t => t.classList.remove('active'));
+            const activeTab = document.getElementById('tab-' + deptId);
+            if(activeTab) activeTab.classList.add('active');
+
+            // الربط مع المخزن الموحد nour_employees
+            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
+            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
+            const today = new Date().toLocaleDateString('ar-EG');
+
+            // فلترة حسب القسم المسجل
+            const deptEmps = employees.filter(e => e.department === deptId);
+            const presentNames = logs.filter(l => l.date === today && l.type === 'حضور').map(l => l.name);
+
+            const presentList = deptEmps.filter(e => presentNames.includes(e.name));
+            const absentList = deptEmps.filter(e => !presentNames.includes(e.name));
+
+            document.getElementById('presentCount').innerText = presentList.length;
+            document.getElementById('absentCount').innerText = absentList.length;
+
+            window.deptData = { 
+                present: presentList, 
+                absent: absentList,
+                fullLogs: logs.filter(l => l.date === today)
+            };
+            
+            showStatus(currentMode);
+        }
+
+        function showStatus(status) {
+            currentMode = status;
+            const list = window.deptData[status];
+            const container = document.getElementById('namesList');
+            
+            document.getElementById('presentCircle').classList.toggle('active-circle', status === 'present');
+            document.getElementById('absentCircle').classList.toggle('active-circle', status === 'absent');
+
+            if (list.length === 0) {
+                container.innerHTML = `<p class="col-span-2 text-center text-slate-400 italic py-10 uppercase text-[10px] tracking-widest">لا يوجد ${status === 'present' ? 'حاضرين' : 'غائبين'} حالياً</p>`;
+                return;
+            }
+
+            container.innerHTML = list.map(emp => {
+                // فحص إذا كان الموظف مسجل له سهرة (يوم ونصف)
+                const log = window.deptData.fullLogs.find(l => l.name === emp.name);
+                const hasExtra = log && log.dayStatus === "يوم ونصف";
+
+                return `
+                    <div class="bg-white p-5 rounded-[2.5rem] shadow-md border border-slate-50 text-center worker-card relative overflow-hidden">
+                        ${hasExtra ? '<span class="absolute top-2 right-2 bg-purple-100 text-purple-600 text-[6px] px-2 py-1 rounded-full font-black italic uppercase">إضافي ✓</span>' : ''}
+                        
+                        <div class="w-14 h-14 mx-auto mb-3 rounded-2xl flex items-center justify-center text-white font-black text-sm shadow-inner transition-all ${status === 'present' ? 'bg-emerald-500' : 'bg-red-400 opacity-60'}">
+                            ${emp.name.substring(0, 1).toUpperCase()}
+                        </div>
+                        
+                        <h4 class="text-[10px] font-black text-slate-800 italic leading-tight">${emp.name}</h4>
+                        
+                        <span class="text-[7px] font-bold ${status === 'present' ? 'text-emerald-500' : 'text-red-400'} italic uppercase block mt-1">
+                            ${status === 'present' ? 'متواجد بالقسم' : 'غير مسجل'}
+                        </span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // تشغيل القسم الأول عند الفتح
+        window.onload = () => selectDept('المكابس');
+    </script>
+</body>
+</html>

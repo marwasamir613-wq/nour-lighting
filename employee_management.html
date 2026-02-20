@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>إدارة شؤون الموظفين - شركة نور</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style> body { font-family: 'Cairo', sans-serif; background: #f8fafc; } </style>
+</head>
+<body class="p-6 text-right italic font-bold">
+
+    <header class="max-w-md mx-auto flex items-center gap-4 mb-10">
+        <button onclick="window.location.href='admin_dashboard.html'" class="w-10 h-10 bg-white rounded-full shadow-sm flex items-center justify-center border active:scale-90 transition-all">
+            <span class="material-icons-round text-slate-600">arrow_forward</span>
+        </button>
+        <h1 class="text-xl font-black text-blue-800 uppercase italic">شؤون الموظفين</h1>
+    </header>
+
+    <main class="max-w-md mx-auto grid grid-cols-1 gap-6">
+        <div onclick="window.location.href='add_employee.html'" class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-blue-50 flex items-center gap-6 cursor-pointer active:scale-95 transition-all">
+            <div class="w-16 h-16 bg-blue-100 rounded-3xl flex items-center justify-center text-blue-600">
+                <span class="material-icons-round text-4xl">person_add</span>
+            </div>
+            <div>
+                <h3 class="font-black text-slate-800 italic uppercase">إضافة موظف جديد</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">تسجيل بيانات موظف جديد في القاعدة</p>
+            </div>
+        </div>
+
+        <div onclick="window.location.href='edit_employee.html'" class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-blue-50 flex items-center gap-6 cursor-pointer active:scale-95 transition-all">
+            <div class="w-16 h-16 bg-emerald-100 rounded-3xl flex items-center justify-center text-emerald-600">
+                <span class="material-icons-round text-4xl">manage_accounts</span>
+            </div>
+            <div>
+                <h3 class="font-black text-slate-800 italic uppercase">تعديل بيانات الموظفين</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">تعديل الرواتب، اليومية، والرقم القومي</p>
+            </div>
+        </div>
+
+        <div onclick="window.location.href='all_employees.html'" class="bg-white p-6 rounded-[2.5rem] shadow-xl border border-blue-50 flex items-center gap-6 cursor-pointer active:scale-95 transition-all">
+            <div class="w-16 h-16 bg-purple-100 rounded-3xl flex items-center justify-center text-purple-600">
+                <span class="material-icons-round text-4xl">badge</span>
+            </div>
+            <div>
+                <h3 class="font-black text-slate-800 italic uppercase">سجل الموظفين الشامل</h3>
+                <p class="text-[10px] text-slate-400 font-bold uppercase">عرض كافة الموظفين وحالتهم الحالية</p>
+            </div>
+        </div>
+    </main>
+
+</body>
+</html>

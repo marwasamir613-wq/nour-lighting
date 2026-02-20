@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>أرشيف شركة نور - مروة سمير</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+    <style>body { font-family: 'Cairo', sans-serif; background-color: #f1f5f9; }</style>
+</head>
+<body class="p-6 text-right font-bold italic pb-20">
+
+    <header class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
+        <div class="flex items-center gap-4">
+            <button onclick="window.location.href='admin_dashboard.html'" class="w-12 h-12 bg-white rounded-2xl shadow-sm flex items-center justify-center border border-slate-200 active:scale-90">
+                <span class="material-icons-round text-slate-600">arrow_forward</span>
+            </button>
+            <div>
+                <h1 class="text-2xl font-black text-slate-800 italic uppercase">أرشيف البيانات التاريخي</h1>
+                <p class="text-[10px] text-blue-600 font-bold tracking-widest uppercase">شركة نور للإضاءة - سجلات غير قابلة للمسح</p>
+            </div>
+        </div>
+        
+        <div class="flex gap-2">
+            <select id="archiveMonth" onchange="loadArchiveData()" class="bg-white p-3 rounded-xl shadow-sm border-none text-xs font-black outline-none focus:ring-2 focus:ring-blue-500">
+                <option value="01">يناير</option><option value="02">فبراير</option><option value="03">مارس</option>
+                <option value="04">أبريل</option><option value="05">مايو</option><option value="06">يونيو</option>
+                <option value="07">يوليو</option><option value="08">أغسطس</option><option value="09">سبتمبر</option>
+                <option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+            </select>
+            <input type="text" id="archiveSearch" oninput="loadArchiveData()" placeholder="بحث في الأرشيف باسم الموظف..." class="bg-white p-3 rounded-xl shadow-sm border-none text-xs font-bold outline-none w-64">
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-blue-500">
+                <p class="text-[10px] text-slate-400 mb-1 italic uppercase">إجمالي مرتبات الشهر</p>
+                <p id="archTotalSalaries" class="text-xl font-black text-blue-900">0 ج.م</p>
+            </div>
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-red-500">
+                <p class="text-[10px] text-slate-400 mb-1 italic uppercase">إجمالي الخصومات</p>
+                <p id="archTotalDeductions" class="text-xl font-black text-red-600">0 ج.م</p>
+            </div>
+            <div class="bg-white p-6 rounded-[2rem] shadow-xl border-b-4 border-emerald-500">
+                <p class="text-[10px] text-slate-400 mb-1 italic uppercase">إجمالي الحضور</p>
+                <p id="archTotalAttendance" class="text-xl font-black text-emerald-600">0 يوم</p>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-100">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right text-xs">
+                    <thead class="bg-slate-900 text-white font-black italic uppercase">
+                        <tr>
+                            <th class="p-5">الموظف</th>
+                            <th class="p-5">القسم</th>
+                            <th class="p-5">الصافي المنصرف</th>
+                            <th class="p-5">الغياب</th>
+                            <th class="p-5">السلف المستردة</th>
+                            <th class="p-5">تاريخ الترحيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="archiveTableBody" class="font-bold text-slate-700">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function loadArchiveData() {
+            const selectedMonth = document.getElementById('archiveMonth').value;
+            const searchTerm = document.getElementById('archiveSearch').value.toLowerCase();
+            
+            // سحب بيانات الأرشيف من مخزن nour_archive
+            const archive = JSON.parse(localStorage.getItem('nour_archive')) || [];
+            const container = document.getElementById('archiveTableBody');
+            
+            // فلترة حسب الشهر والبحث
+            const filteredData = archive.filter(item => {
+                const itemMonth = item.archiveDate.split('-')[1];
+                return itemMonth === selectedMonth && item.name.toLowerCase().includes(searchTerm);
+            });
+
+            let html = '';
+            let totalS = 0, totalD = 0, totalA = 0;
+
+            if (filteredData.length === 0) {
+                container.innerHTML = '<tr><td colspan="6" class="p-10 text-center text-slate-300 italic">لا توجد بيانات مؤرشفة لهذا الشهر</td></tr>';
+                updateStats(0, 0, 0);
+                return;
+            }
+
+            filteredData.forEach(data => {
+                totalS += parseFloat(data.netSalary) || 0;
+                totalD += parseFloat(data.deductions) || 0;
+                totalA += parseInt(data.presentDays) || 0;
+
+                html += `
+                    <tr class="border-b border-slate-50 hover:bg-blue-50/50 transition-all">
+                        <td class="p-5 text-slate-900">${data.name}</td>
+                        <td class="p-5 text-blue-600 uppercase italic">${data.department}</td>
+                        <td class="p-5 font-black text-emerald-600">${data.netSalary.toLocaleString()} ج.م</td>
+                        <td class="p-5 text-red-500">${data.absentDays} يوم</td>
+                        <td class="p-5 text-orange-600">${data.loansPaid.toLocaleString()} ج.م</td>
+                        <td class="p-5 text-slate-400 text-[10px]">${data.archiveDate}</td>
+                    </tr>
+                `;
+            });
+
+            container.innerHTML = html;
+            updateStats(totalS, totalD, totalA);
+        }
+
+        function updateStats(s, d, a) {
+            document.getElementById('archTotalSalaries').innerText = s.toLocaleString() + " ج.م";
+            document.getElementById('archTotalDeductions').innerText = d.toLocaleString() + " ج.م";
+            document.getElementById('archTotalAttendance').innerText = a + " يوم";
+        }
+
+        // تشغيل التحميل عند الفتح بناءً على الشهر الحالي
+        window.onload = () => {
+            const currentMonth = ("0" + (new Date().getMonth() + 1)).slice(-2);
+            document.getElementById('archiveMonth').value = currentMonth;
+            loadArchiveData();
+        };
+    </script>
+</body>
+</html>

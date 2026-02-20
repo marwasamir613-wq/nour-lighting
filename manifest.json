@@ -1,0 +1,22 @@
+{
+  "name": "شركة نور للإضاءة الحديثة",
+  "short_name": "نور",
+  "description": "تطبيق إدارة الموظفين - شركة نور",
+  "start_url": "welcome.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#137fec",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "a.png.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "a.png.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
