@@ -10,7 +10,6 @@
     <style>
         body { font-family: 'Cairo', sans-serif; background-color: #f6f7f8; }
         .ios-shadow { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
-        /* تأمين إمكانية النقر والكتابة داخل الخانات */
         input { 
             position: relative; 
             z-index: 10; 
@@ -69,43 +68,47 @@
     </footer>
 
     <script>
+        // كود بقاء تسجيل الدخول: لو الاسم متخزن يفتح الرئيسية فوراً
+        window.onload = function() {
+            if (localStorage.getItem('logged_in_employee_name')) {
+                window.location.href = "home.html";
+            }
+        };
+
         document.getElementById('loginBtn').addEventListener('click', function() {
             const nameInput = document.getElementById('fullName').value.trim();
             const idInput = document.getElementById('nationalID').value.trim();
 
             if (!nameInput || !idInput) {
-                alert("يا مروة، قولي للموظف يكمل بياناته الأول!");
+                alert("برجاء إدخال البيانات كاملة");
                 return;
             }
 
-            // بياناتك الشخصية للتجربة
+            // بياناتك الشخصية (وضع المبرمج) بدون التنبيه المزعج
             const adminUser = {
                 name: "مروه سمير حسن",
                 id: "12345678901234" 
             };
 
-            // سحب المخزن الموحد (البيانات اللي سجلتيها في الداش بورد)
             const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
 
-            // البحث عن الموظف في المخزن
             const foundEmployee = employees.find(emp => 
                 emp.name === nameInput && (String(emp.nationalID) === idInput || String(emp.id) === idInput)
             );
 
             if (nameInput === adminUser.name && idInput === adminUser.id) {
-                alert('أهلاً بكِ يا بشمهندسة مروة (وضع المبرمج)');
+                // دخول مباشر للمبرمج بدون رسايل
                 localStorage.setItem('logged_in_employee_name', adminUser.name);
                 window.location.href = "home.html"; 
             } 
             else if (foundEmployee) {
-                alert('تم التحقق بنجاح.. أهلاً بك يا ' + foundEmployee.name);
-                // حفظ بيانات الموظف بالكامل عشان تظهر في الصفحة الشخصية
+                // دخول مباشر للموظف
                 localStorage.setItem('logged_in_employee_name', foundEmployee.name);
                 localStorage.setItem('current_employee_data', JSON.stringify(foundEmployee));
                 window.location.href = "home.html";
             } 
             else {
-                alert('البيانات غير صحيحة! تأكدي من تسجيل الاسم والرقم القومي في لوحة الإدارة أولاً.');
+                alert('البيانات غير صحيحة! تأكد من كتابة الاسم  والرقم القومي .');
             }
         });
     </script>
