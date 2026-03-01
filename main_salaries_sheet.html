@@ -1,153 +1,683 @@
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>شيت مرتبات شركة نور</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        body { font-family: 'Cairo', sans-serif; background-color: #fcfdfe; color: #1e293b; }
-        .header-strip {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1.2fr 1.2fr;
-            background: #2563eb;
-            border-radius: 50px;
-            color: white;
-            font-size: 11px;
-            font-weight: 900;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.2);
-        }
-        .header-strip div { padding: 15px 5px; text-align: center; }
-        .data-row {
-            display: grid;
-            grid-template-columns: 1.5fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1.2fr 1.2fr;
-            background: white;
-            margin-bottom: 6px;
-            border-radius: 20px;
-            align-items: center;
-            border: 1px solid #e2e8f0;
-        }
-        .data-row div { padding: 10px 5px; text-align: center; font-size: 12px; font-weight: bold; }
-        .edit-input { width: 60px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center; padding: 2px; }
-        .cycle-select { background: transparent; border: none; font-size: 10px; font-weight: bold; color: #2563eb; cursor: pointer; }
-        .dashboard-card { border-radius: 2.5rem; padding: 1.5rem; text-align: center; display: flex; flex-direction: column; justify-content: center; min-width: 280px; }
-        .card-blue { background: #1e3a8a; color: white; }
-        .card-red { border: 2px solid #ef4444; color: #ef4444; background: white; }
-        .card-white { border: 2px solid #3b82f6; color: #1e40af; background: white; }
-    </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>شيت مرتبات شركة نور</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <style>
+    body { font-family: 'Cairo', sans-serif; background-color: #fcfdfe; color: #1e293b; }
+
+    .header-strip{
+      display:grid;
+      grid-template-columns: 1.7fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1.2fr 1.2fr;
+      background:#2563eb;border-radius:50px;color:#fff;font-size:11px;font-weight:900;
+      margin-bottom:10px;box-shadow:0 4px 15px rgba(37,99,235,.2);overflow:hidden
+    }
+    .header-strip div{padding:15px 5px;text-align:center}
+
+    .data-row{
+      display:grid;
+      grid-template-columns: 1.7fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1.2fr 1.2fr;
+      background:#fff;margin-bottom:6px;border-radius:20px;align-items:center;border:1px solid #e2e8f0;overflow:hidden
+    }
+    .data-row div{padding:10px 5px;text-align:center;font-size:12px;font-weight:900}
+
+    .edit-input{
+      width:72px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:10px;text-align:center;
+      padding:6px 6px;outline:none;font-weight:900
+    }
+    .cycle-select{
+      background:#eff6ff;border:1px solid #dbeafe;padding:6px 8px;border-radius:12px;
+      font-size:11px;font-weight:900;color:#1d4ed8;cursor:pointer;outline:none
+    }
+
+    .dashboard-card{
+      border-radius:2.5rem;padding:1.5rem;text-align:center;display:flex;flex-direction:column;justify-content:center;
+      min-width:280px;box-shadow:0 10px 30px rgba(2,6,23,.06)
+    }
+    .card-blue{background:#1e3a8a;color:#fff}
+    .card-red{border:2px solid #ef4444;color:#ef4444;background:#fff}
+    .card-white{border:2px solid #3b82f6;color:#1e40af;background:#fff}
+    @media print{.no-print{display:none!important}}
+
+    .sort-btn{
+      width:26px;height:26px;border-radius:10px;border:1px solid #e2e8f0;background:#f1f5f9;
+      display:inline-flex;align-items:center;justify-content:center;font-weight:900;cursor:pointer;
+    }
+    .sort-btn:active{transform:scale(.92)}
+    .emp-cell{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;}
+    .emp-name{color:#0f172a;font-weight:900;text-align:right}
+    .emp-actions{display:flex;gap:6px}
+
+    /* ✅ DD/MM date */
+    .date-text{direction:ltr;text-align:center;width:140px}
+    .cal-btn{
+      width:34px;height:34px;border-radius:10px;
+      display:flex;align-items:center;justify-content:center;
+      border:1px solid #e2e8f0;background:#fff;color:#1d4ed8;cursor:pointer;
+    }
+
+    /* mode badge */
+    .mode-badge{
+      border:1px solid #e2e8f0;background:#fff;border-radius:14px;padding:10px 12px;
+      display:flex;align-items:center;gap:8px;box-shadow:0 6px 20px rgba(2,6,23,.05);
+      font-weight:900;font-size:12px;
+    }
+    .mode-dot{width:10px;height:10px;border-radius:99px;background:#10b981}
+    .mode-dot.saved{background:#f59e0b}
+  </style>
 </head>
+
 <body class="p-6 italic">
 
-    <header class="max-w-[1400px] mx-auto flex justify-between items-center mb-6 no-print">
-        <div class="flex items-center gap-4">
-            <div class="bg-blue-100 p-3 rounded-2xl">
-                <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" width="40" alt="Finance Icon">
-            </div>
-            <div class="text-right">
-                <h1 class="text-2xl font-black text-blue-900">شيت مرتبات شركة نور</h1>
-                <p class="text-[11px] text-blue-500 font-bold uppercase tracking-widest">المبرمجة: مروة سمير</p>
-            </div>
-        </div>
-
-        <div class="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-blue-50 items-center">
-            <span class="text-[10px] font-black mr-2">الفترة من:</span>
-            <input type="date" id="start" class="text-xs font-bold bg-slate-50 p-2 rounded-lg outline-none">
-            <input type="date" id="end" class="text-xs font-bold bg-slate-50 p-2 rounded-lg outline-none">
-            <button onclick="calculate()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all">تحديث الحسابات</button>
-        </div>
-
-        <div class="flex gap-2">
-            <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2">حفظ PDF</button>
-            <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-[10px] font-black flex items-center gap-2">طباعة</button>
-        </div>
-    </header>
-
-    <div id="pdfContent" class="max-w-[1400px] mx-auto">
-        <div class="header-strip">
-            <div class="rounded-r-full">الموظف</div>
-            <div>دورة القبض</div>
-            <div>الراتب الأساسي</div>
-            <div>الراتب المستحق</div>
-            <div>اليومية</div>
-            <div>أيام الغياب</div>
-            <div class="bg-blue-700">سعر الغياب</div>
-            <div class="bg-blue-800">التأمينات</div>
-            <div class="bg-blue-500">سلفة (يدوي)</div>
-            <div class="bg-blue-900">جزاءات</div>
-            <div class="bg-slate-900 text-emerald-400">الصافي النهائي</div>
-            <div class="bg-slate-800 rounded-l-full">إجمالي السلفيات</div>
-        </div>
-
-        <div id="data-container">
-            </div>
-
-        <div class="flex flex-wrap justify-center gap-6 mt-10">
-            <div class="dashboard-card card-white">
-                <h3 class="text-sm font-black mb-1">إجمالي المستحقات</h3>
-                <p class="text-3xl font-black"><span id="total-earnings">0</span> ج.م</p>
-            </div>
-            <div class="dashboard-card card-red">
-                <h3 class="text-sm font-black mb-1">إجمالي الخصومات</h3>
-                <p class="text-3xl font-black"><span id="total-deductions-all">0</span> ج.م</p>
-            </div>
-            <div class="dashboard-card card-blue">
-                <h3 class="text-sm font-black mb-1">صافي المنصرف العام</h3>
-                <p class="text-3xl font-black"><span id="total-net">0</span> ج.م</p>
-            </div>
-        </div>
+<header class="max-w-[1400px] mx-auto flex justify-between items-center mb-6 no-print gap-4 flex-wrap">
+  <div class="flex items-center gap-4">
+    <div class="bg-blue-100 p-3 rounded-2xl">
+      <img src="https://cdn-icons-png.flaticon.com/512/2489/2489756.png" width="40" alt="Finance Icon">
     </div>
+    <div class="text-right">
+      <h1 class="text-2xl font-black text-blue-900">شيت مرتبات شركة نور</h1>
+      <p class="text-[11px] text-blue-500 font-bold uppercase tracking-widest">المبرمجة: مروة سمير</p>
+    </div>
+  </div>
 
-    <script>
-        function calculate() {
-            const employees = JSON.parse(localStorage.getItem('nour_employees')) || [];
-            const logs = JSON.parse(localStorage.getItem('attendance_logs')) || [];
-            const startInput = document.getElementById('start').value;
-            const endInput = document.getElementById('end').value;
+  <div id="modeBadge" class="mode-badge">
+    <span id="modeDot" class="mode-dot"></span>
+    <span id="modeText">وضع لايف (يحسب الغيابات تلقائي)</span>
+  </div>
 
-            if(!startInput || !endInput) return;
+  <div class="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-blue-50 items-center flex-wrap">
+    <span class="text-[10px] font-black mr-2 text-slate-700">الفترة من:</span>
 
-            const start = new Date(startInput);
-            const end = new Date(endInput);
+    <input type="text" id="startText" class="text-xs font-black bg-slate-50 p-2 rounded-lg outline-none border border-slate-200 date-text" placeholder="DD/MM/YYYY">
+    <button id="startBtn" class="cal-btn" type="button" title="اختيار تاريخ">📅</button>
+    <input type="date" id="start" class="hidden">
 
-            let html = '';
-            let gEarnings = 0, gDeductions = 0, gNet = 0;
+    <span class="text-[10px] font-black text-slate-700">إلى:</span>
 
-            employees.forEach((emp, index) => {
-                const daily = parseFloat(emp.dailyRate) || 0;
-                
-                // حساب الحضور الفعلي
-                const empLogs = logs.filter(l => {
-                    const d = new Date(l.date);
-                    return l.name === emp.name && l.type === 'حضور' && d >= start && d <= end;
-                });
+    <input type="text" id="endText" class="text-xs font-black bg-slate-50 p-2 rounded-lg outline-none border border-slate-200 date-text" placeholder="DD/MM/YYYY">
+    <button id="endBtn" class="cal-btn" type="button" title="اختيار تاريخ">📅</button>
+    <input type="date" id="end" class="hidden">
 
-                let earned = empLogs.length * daily;
-                let insurance = parseFloat(emp.insurance) || 0;
-                let penalties = parseFloat(emp.penalties) || 0;
-                let totalLoansHistory = parseFloat(emp.totalLoans) || 0; // السلف الكلي من الداش بورد
-                
-                let net = earned - (insurance + penalties);
+    <button id="btnCalc" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all" type="button">
+      فتح/تحديث الفترة
+    </button>
+  </div>
 
-                html += `
-                <div class="data-row shadow-sm">
-                    <div class="text-blue-900 font-black">${emp.name}</div>
-                    <div>
-                        <select class="cycle-select">
-                            <option>أسبوعي</option>
-                            <option>أسبوعين</option>
-                            <option>شهري</option>
-                        </select>
-                    </div>
-                    <div class="text-slate-400">${emp.baseSalary || 0}</div>
-                    <div class="text-blue-600 font-black">${earned}</div>
-                    <div class="text-slate-600">${daily}</div>
-                    <div class="text-red-500">${emp.absentDays || 0}</div>
-                    <div class="text-red-400 font-bold">${(emp.absentDays || 0) * daily}</div>
-                    <div class="text-slate-500">${insurance}</div>
-                    <div><input type="number" class="edit-input" value="0" oninput="updateRowNet(this, ${earned}, ${insurance}, ${penalties})"></div>
-                    <div class="text-red-600">${penalties}</div>
-                    <div class="bg-blue-50 text-blue-900 font-black row-net">${net} ج.م</div>
-                    <div class="text-slate-700 font-black">${totalLoansHistory}</div>
+  <div class="flex gap-2 flex-wrap">
+    <button id="btnNewSheet" class="bg-white text-slate-900 px-4 py-2 rounded-xl text-[10px] font-black shadow-sm border" type="button">
+      فتح شيت جديد
+    </button>
+    <button id="btnSavePeriod" class="bg-emerald-600 text-white px-4 py-2 rounded-xl text-[10px] font-black" type="button">
+      حفظ المرتبات
+    </button>
+    <button onclick="downloadPDF()" class="bg-blue-600 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-blue-700 transition-all" type="button">
+      حفظ PDF
+    </button>
+    <button onclick="window.print()" class="bg-slate-800 text-white px-4 py-2 rounded-xl text-[10px] font-black hover:bg-slate-900 transition-all" type="button">
+      طباعة
+    </button>
+  </div>
+</header>
+
+<div id="pdfContent" class="max-w-[1400px] mx-auto">
+  <div class="header-strip">
+    <div class="rounded-r-full">الموظف</div>
+    <div>دورة القبض</div>
+    <div>الراتب الأساسي (شهري)</div>
+    <div>الراتب المستحق</div>
+    <div>اليومية</div>
+    <div>أيام الغياب</div>
+    <div style="background:#1d4ed8;">سعر الغياب</div>
+    <div style="background:#1e40af;">التأمينات</div>
+    <div style="background:#3b82f6;">سلفة (يدوي)</div>
+    <div style="background:#1e3a8a;">جزاءات</div>
+    <div style="background:#0f172a;color:#34d399;">الصافي النهائي</div>
+    <div style="background:#111827;" class="rounded-l-full">متبقي السلفيات</div>
+  </div>
+
+  <div id="data-container"></div>
+
+  <div class="flex flex-wrap justify-center gap-6 mt-10 no-print">
+    <div class="dashboard-card card-white">
+      <h3 class="text-sm font-black mb-1">إجمالي المستحقات</h3>
+      <p class="text-3xl font-black"><span id="total-earnings">0</span> ج.م</p>
+    </div>
+    <div class="dashboard-card card-red">
+      <h3 class="text-sm font-black mb-1">إجمالي الخصومات</h3>
+      <p class="text-3xl font-black"><span id="total-deductions-all">0</span> ج.م</p>
+    </div>
+    <div class="dashboard-card card-blue">
+      <h3 class="text-sm font-black mb-1">صافي المنصرف العام</h3>
+      <p class="text-3xl font-black"><span id="total-net">0</span> ج.م</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const EMP_KEY = 'nour_employees';
+  const ATT_KEY = 'attendance_logs';
+  const ORDER_KEY = 'salary_sheet_order';
+  const HIST_KEY  = 'nour_salary_history_v2'; // نفس بتاع الملف التاني
+
+  let CURRENT_MODE = 'live';
+
+  function setMode(mode, savedAtISO){
+    CURRENT_MODE = mode;
+    const dot = document.getElementById('modeDot');
+    const txt = document.getElementById('modeText');
+
+    if(mode === 'saved'){
+      dot.classList.add('saved');
+      const t = savedAtISO ? new Date(savedAtISO) : null;
+      const stamp = t ? `${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()} ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}` : '';
+      txt.textContent = `عرض محفوظ (كما تم حفظه) ${stamp ? '— ' + stamp : ''}`;
+    }else{
+      dot.classList.remove('saved');
+      txt.textContent = 'وضع لايف (يحسب الغيابات تلقائي)';
+    }
+  }
+
+  function normalizeNumber(value) {
+    if (value === null || value === undefined) return '0';
+    let s = String(value).trim();
+    const ar = '٠١٢٣٤٥٦٧٨٩';
+    s = s.replace(/[٠-٩]/g, d => String(ar.indexOf(d)));
+    s = s.replace(/,/g, '').replace(/[^\d.\-]/g, '');
+    if (s === '' || s === '-' || s === '.' || s === '-.') return '0';
+    return s;
+  }
+  function num(v){ const n = parseFloat(normalizeNumber(v)); return isNaN(n)?0:n; }
+  function moneyBase(v){
+    let n = num(v);
+    if(Number.isFinite(n) && n > 0 && n < 100 && Math.floor(n) === n) n = n * 1000;
+    return n;
+  }
+  function fmt(n){ return Number(n || 0).toLocaleString('en-US'); }
+
+  function isoToDDMM(iso){
+    if(!iso) return '';
+    const [y,m,d] = iso.split('-');
+    return `${d}/${m}/${y}`;
+  }
+  function ddmmToISO(txt){
+    if(!txt) return '';
+    const s = String(txt).trim().replace(/\s+/g,'');
+    const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if(!m) return '';
+    let dd = Number(m[1]), mm = Number(m[2]), yy = Number(m[3]);
+    if(mm < 1 || mm > 12 || dd < 1 || dd > 31) return '';
+    const iso = `${yy}-${String(mm).padStart(2,'0')}-${String(dd).padStart(2,'0')}`;
+    const test = new Date(iso);
+    if(isNaN(test.getTime())) return '';
+    if(test.getUTCFullYear() !== yy || (test.getUTCMonth()+1) !== mm || test.getUTCDate() !== dd) return '';
+    return iso;
+  }
+
+  function getEmployees(){ return JSON.parse(localStorage.getItem(EMP_KEY)) || []; }
+  function setEmployees(arr){ localStorage.setItem(EMP_KEY, JSON.stringify(arr)); }
+
+  function getOrderMap(){ return JSON.parse(localStorage.getItem(ORDER_KEY)) || []; }
+  function saveOrderMap(o){ localStorage.setItem(ORDER_KEY, JSON.stringify(o)); }
+
+  function getHistory(){ return JSON.parse(localStorage.getItem(HIST_KEY)) || {}; }
+  function setHistory(o){ localStorage.setItem(HIST_KEY, JSON.stringify(o)); }
+  function periodKey(s,e){ return `${s}__${e}`; }
+
+  function computePeriodSalary(monthlyBase, cycle) {
+    const base = moneyBase(monthlyBase);
+    if (cycle === 'أسبوعي') return base / 4;
+    if (cycle === 'أسبوعين') return base / 2;
+    return base;
+  }
+
+  function calcAbsenceDaysForRange(attendanceLogs, empName, startDate, endDate) {
+    const today = new Date(); today.setHours(0,0,0,0);
+
+    const presentLogs = attendanceLogs.filter(log => {
+      const d = new Date(log.date); d.setHours(0,0,0,0);
+      return log.name === empName && log.type === 'حضور' && d >= startDate && d <= endDate;
+    });
+
+    const presentDays = new Set(presentLogs.map(l => {
+      const d = new Date(l.date); d.setHours(0,0,0,0);
+      return d.toISOString().slice(0,10);
+    })).size;
+
+    let elapsed = 0;
+    const t = new Date(startDate); t.setHours(0,0,0,0);
+    while (t <= endDate) {
+      if (t <= today) elapsed++;
+      t.setDate(t.getDate() + 1);
+    }
+    return Math.max(0, elapsed - presentDays);
+  }
+
+  function findSnapshot(){
+    const s = document.getElementById('start').value;
+    const e = document.getElementById('end').value;
+    if(!s || !e) return null;
+    const hist = getHistory();
+    return hist[periodKey(s,e)] || null;
+  }
+
+  function renderSaved(snap){
+    setMode('saved', snap.savedAt);
+
+    let html = '';
+    snap.rows.forEach(r=>{
+      html += `
+        <div class="data-row shadow-sm bg-amber-50/20" data-name="${r.name}">
+          <div class="emp-cell">
+            <div class="emp-name">${r.name}</div>
+            <div class="emp-actions">
+              <button class="sort-btn opacity-40 cursor-not-allowed" type="button" disabled>↑</button>
+              <button class="sort-btn opacity-40 cursor-not-allowed" type="button" disabled>↓</button>
+            </div>
+          </div>
+
+          <div>
+            <select class="cycle-select opacity-70" disabled>
+              <option selected>${r.payCycle || 'أسبوعي'}</option>
+            </select>
+          </div>
+
+          <div class="text-slate-400">${fmt(r.baseSalary)}</div>
+          <div class="text-blue-600 font-black">${r.periodSalaryText || ''}</div>
+
+          <div class="text-slate-600">${fmt(r.dailyRate)}</div>
+          <div class="text-red-500">${num(r.absentDays)}</div>
+          <div class="text-red-400 font-black">${r.absPriceText || ''}</div>
+
+          <div class="text-slate-500">
+            <input class="edit-input opacity-70" disabled value="${num(r.insurance)}">
+          </div>
+
+          <div>
+            <input class="edit-input opacity-70" disabled value="${num(r.manualLoan)}">
+          </div>
+
+          <div class="text-slate-500">
+            <input class="edit-input opacity-70" disabled value="${num(r.penalties)}">
+          </div>
+
+          <div class="bg-blue-50 text-blue-900 font-black">${r.netText || ''}</div>
+          <div class="text-slate-700 font-black">${r.remText || ''}</div>
+        </div>
+      `;
+    });
+
+    document.getElementById('data-container').innerHTML = html;
+
+    document.getElementById('total-earnings').textContent = (snap.totals?.totalBefore || '0').replace(/[^\d,]/g,'');
+    document.getElementById('total-deductions-all').textContent = (snap.totals?.totalDeductions || '0').replace(/[^\d,]/g,'');
+    document.getElementById('total-net').textContent = (snap.totals?.totalFinal || '0').replace(/[^\d,]/g,'');
+  }
+
+  function renderLive(){
+    setMode('live');
+
+    const employees = getEmployees().map(e => ({
+      ...e,
+      name: e.name || '',
+      baseSalary: moneyBase(e.baseSalary),
+      dailyRate: moneyBase(e.dailyRate),
+      insurance: num(e.insurance),
+      penalties: num(e.penalties),
+      payCycle: e.payCycle || 'أسبوعي',
+      loans: moneyBase(e.loans)
+    }));
+
+    const logs = JSON.parse(localStorage.getItem(ATT_KEY)) || [];
+
+    const s = document.getElementById('start').value;
+    const e = document.getElementById('end').value;
+    if(!s || !e) return;
+
+    const start = new Date(s); start.setHours(0,0,0,0);
+    const end   = new Date(e); end.setHours(0,0,0,0);
+
+    let order = getOrderMap();
+    const names = employees.map(x => x.name);
+    order = Array.from(new Set([...order, ...names]));
+    saveOrderMap(order);
+
+    employees.sort((a,b) => order.indexOf(a.name) - order.indexOf(b.name));
+
+    let html = '';
+    employees.forEach(emp=>{
+      const absentDays = calcAbsenceDaysForRange(logs, emp.name, start, end);
+      const periodSalary = computePeriodSalary(emp.baseSalary, emp.payCycle);
+      const absPrice = absentDays * emp.dailyRate;
+
+      const netBeforeManual = periodSalary - (absPrice + emp.insurance + emp.penalties);
+
+      html += `
+        <div class="data-row shadow-sm"
+             data-name="${emp.name}"
+             data-base="${emp.baseSalary}"
+             data-daily="${emp.dailyRate}"
+             data-abs="${absentDays}">
+          <div class="emp-cell">
+            <div class="emp-name">${emp.name}</div>
+            <div class="emp-actions">
+              <button class="sort-btn" type="button" data-action="up" data-name="${emp.name}">↑</button>
+              <button class="sort-btn" type="button" data-action="down" data-name="${emp.name}">↓</button>
+            </div>
+          </div>
+
+          <div>
+            <select class="cycle-select" data-role="cycle" data-name="${emp.name}">
+              <option value="أسبوعي" ${emp.payCycle==='أسبوعي'?'selected':''}>أسبوعي</option>
+              <option value="أسبوعين" ${emp.payCycle==='أسبوعين'?'selected':''}>أسبوعين</option>
+              <option value="شهري" ${emp.payCycle==='شهري'?'selected':''}>شهري</option>
+            </select>
+          </div>
+
+          <div class="text-slate-400">${fmt(emp.baseSalary)}</div>
+          <div class="text-blue-600 font-black" data-cell="period">${fmt(periodSalary)}</div>
+
+          <div class="text-slate-600">${fmt(emp.dailyRate)}</div>
+          <div class="text-red-500" data-cell="absDays">${absentDays}</div>
+          <div class="text-red-400 font-black" data-cell="absPrice">${fmt(absPrice)}</div>
+
+          <div class="text-slate-500">
+            <input class="edit-input" data-role="ins" data-name="${emp.name}" value="${emp.insurance}">
+          </div>
+
+          <div>
+            <input class="edit-input" data-role="loan" data-name="${emp.name}" value="0">
+          </div>
+
+          <div class="text-slate-500">
+            <input class="edit-input" data-role="pen" data-name="${emp.name}" value="${emp.penalties}">
+          </div>
+
+          <div class="bg-blue-50 text-blue-900 font-black" data-cell="net">${fmt(netBeforeManual)} ج.م</div>
+          <div class="text-slate-700 font-black" data-cell="rem">${fmt(emp.loans)} ج.م</div>
+        </div>
+      `;
+    });
+
+    document.getElementById('data-container').innerHTML = html;
+    recalcTotalsLive();
+  }
+
+  function recalcRowLive(row){
+    const base = moneyBase(row.dataset.base);
+    const daily = moneyBase(row.dataset.daily);
+    const absDays = num(row.dataset.abs);
+
+    const cycle = row.querySelector('[data-role="cycle"]')?.value || 'أسبوعي';
+    const periodSalary = computePeriodSalary(base, cycle);
+
+    const absPrice = absDays * daily;
+
+    const ins = num(row.querySelector('[data-role="ins"]')?.value);
+    const pen = num(row.querySelector('[data-role="pen"]')?.value);
+    const loan = num(row.querySelector('[data-role="loan"]')?.value);
+
+    const net = periodSalary - (absPrice + ins + pen + loan);
+
+    const employees = getEmployees();
+    const emp = employees.find(x => x.name === row.dataset.name);
+    const rem = emp ? moneyBase(emp.loans) : 0;
+
+    row.querySelector('[data-cell="period"]').textContent = fmt(periodSalary);
+    row.querySelector('[data-cell="absPrice"]').textContent = fmt(absPrice);
+    row.querySelector('[data-cell="net"]').textContent = fmt(net) + ' ج.م';
+    row.querySelector('[data-cell="rem"]').textContent = fmt(rem) + ' ج.م';
+  }
+
+  function recalcTotalsLive(){
+    let gE = 0, gD = 0, gN = 0;
+
+    document.querySelectorAll('.data-row').forEach(row=>{
+      const base = moneyBase(row.dataset.base);
+      const daily = moneyBase(row.dataset.daily);
+      const absDays = num(row.dataset.abs);
+
+      const cycle = row.querySelector('[data-role="cycle"]')?.value || 'أسبوعي';
+      const periodSalary = computePeriodSalary(base, cycle);
+
+      const absPrice = absDays * daily;
+
+      const ins = num(row.querySelector('[data-role="ins"]')?.value);
+      const pen = num(row.querySelector('[data-role="pen"]')?.value);
+      const loan = num(row.querySelector('[data-role="loan"]')?.value);
+
+      const ded = absPrice + ins + pen + loan;
+      const net = periodSalary - ded;
+
+      gE += periodSalary;
+      gD += ded;
+      gN += net;
+    });
+
+    document.getElementById('total-earnings').textContent = fmt(gE);
+    document.getElementById('total-deductions-all').textContent = fmt(gD);
+    document.getElementById('total-net').textContent = fmt(gN);
+  }
+
+  function saveSnapshot(){
+    const s = document.getElementById('start').value;
+    const e = document.getElementById('end').value;
+    if(!s || !e) return alert('اختاري الفترة');
+
+    // لو وضع محفوظ → احفظ نفس المعروض
+    const rows = [];
+    document.querySelectorAll('#data-container .data-row').forEach(row=>{
+      const name = row.dataset.name;
+      const payCycle = row.querySelector('[data-role="cycle"]')?.value || row.querySelector('select')?.value || 'أسبوعي';
+
+      const baseSalary = moneyBase(row.dataset.base || row.querySelector('.text-slate-400')?.textContent);
+      const dailyRate  = moneyBase(row.dataset.daily || row.querySelectorAll('.text-slate-600')[0]?.textContent);
+
+      const absDays = num(row.dataset.abs || row.querySelector('[data-cell="absDays"]')?.textContent);
+
+      const ins = num(row.querySelector('[data-role="ins"]')?.value || row.querySelector('input')?.value);
+      const pen = num(row.querySelector('[data-role="pen"]')?.value);
+      const loan = num(row.querySelector('[data-role="loan"]')?.value);
+
+      const periodSalaryText = row.querySelector('[data-cell="period"]')?.textContent || '';
+      const absPriceText     = row.querySelector('[data-cell="absPrice"]')?.textContent || '';
+      const netText          = row.querySelector('[data-cell="net"]')?.textContent || '';
+      const remText          = row.querySelector('[data-cell="rem"]')?.textContent || '';
+
+      rows.push({
+        name, payCycle,
+        baseSalary, dailyRate, absentDays: absDays,
+        insurance: ins, penalties: pen, manualLoan: loan,
+        periodSalaryText, absPriceText, netText, remText
+      });
+    });
+
+    const snap = {
+      version: 1,
+      startISO: s,
+      endISO: e,
+      savedAt: new Date().toISOString(),
+      totals: {
+        totalBefore: document.getElementById('total-earnings').textContent + ' ج.م',
+        totalDeductions: document.getElementById('total-deductions-all').textContent + ' ج.م',
+        totalFinal: document.getElementById('total-net').textContent + ' ج.م'
+      },
+      rows
+    };
+
+    const hist = getHistory();
+    hist[periodKey(s,e)] = snap;
+    setHistory(hist);
+
+    alert('✅ تم حفظ المرتبات للأرشيف');
+    renderSaved(snap);
+  }
+
+  function openPeriod(){
+    const snap = findSnapshot();
+    if(snap) renderSaved(snap);
+    else renderLive();
+  }
+
+  function promptPeriodDDMM(){
+    const s = prompt('اكتب تاريخ البداية بصيغة DD/MM/YYYY');
+    if(!s) return null;
+    const e = prompt('اكتب تاريخ النهاية بصيغة DD/MM/YYYY');
+    if(!e) return null;
+
+    const isoS = ddmmToISO(s);
+    const isoE = ddmmToISO(e);
+    if(!isoS || !isoE){ alert('❌ صيغة التاريخ غلط'); return null; }
+    if(new Date(isoS) > new Date(isoE)){ alert('❌ البداية لازم قبل النهاية'); return null; }
+    return {isoS, isoE};
+  }
+
+  function openNewSheet(){
+    const p = promptPeriodDDMM();
+    if(!p) return;
+    document.getElementById('start').value = p.isoS;
+    document.getElementById('end').value = p.isoE;
+    document.getElementById('startText').value = isoToDDMM(p.isoS);
+    document.getElementById('endText').value = isoToDDMM(p.isoE);
+    renderLive();
+  }
+
+  document.addEventListener('input', (e)=>{
+    if(e.target?.id === 'startText'){
+      const iso = ddmmToISO(e.target.value);
+      if(iso){ document.getElementById('start').value = iso; openPeriod(); }
+    }
+    if(e.target?.id === 'endText'){
+      const iso = ddmmToISO(e.target.value);
+      if(iso){ document.getElementById('end').value = iso; openPeriod(); }
+    }
+
+    if(CURRENT_MODE === 'saved') return;
+
+    const role = e.target?.dataset?.role;
+    if(!role) return;
+    const row = e.target.closest('.data-row');
+    if(!row) return;
+    recalcRowLive(row);
+    recalcTotalsLive();
+  });
+
+  document.addEventListener('change', (e)=>{
+    if(CURRENT_MODE === 'saved') return;
+
+    const role = e.target?.dataset?.role;
+    if(!role) return;
+
+    const name = e.target.dataset.name;
+
+    if(role === 'cycle'){
+      const emps = getEmployees();
+      const i = emps.findIndex(x=>x.name===name);
+      if(i!==-1){ emps[i].payCycle = e.target.value; setEmployees(emps); }
+    }
+
+    if(role === 'ins'){
+      const emps = getEmployees();
+      const i = emps.findIndex(x=>x.name===name);
+      if(i!==-1){ emps[i].insurance = num(e.target.value); setEmployees(emps); }
+    }
+
+    if(role === 'pen'){
+      const emps = getEmployees();
+      const i = emps.findIndex(x=>x.name===name);
+      if(i!==-1){ emps[i].penalties = num(e.target.value); setEmployees(emps); }
+    }
+
+    if(role === 'loan'){
+      const emps = getEmployees();
+      const i = emps.findIndex(x=>x.name===name);
+      if(i!==-1){
+        const manual = Math.max(0, num(e.target.value));
+        const currentRem = Math.max(0, moneyBase(emps[i].loans));
+        emps[i].loans = Math.max(0, currentRem - manual); // لو مفيش متبقي = 0
+        setEmployees(emps);
+      }
+    }
+
+    const row = e.target.closest('.data-row');
+    if(row){
+      recalcRowLive(row);
+      recalcTotalsLive();
+    }
+  });
+
+  document.addEventListener('click', (e)=>{
+    const btn = e.target.closest('button[data-action]');
+    if(!btn) return;
+    if(CURRENT_MODE === 'saved') return;
+
+    const name = btn.dataset.name;
+    const dir = btn.dataset.action === 'up' ? -1 : 1;
+
+    const emps = getEmployees();
+    let order = getOrderMap();
+    const currentNames = emps.map(x => x.name);
+    order = Array.from(new Set([...order, ...currentNames]));
+
+    const idx = order.indexOf(name);
+    const newIdx = idx + dir;
+    if(idx < 0 || newIdx < 0 || newIdx >= order.length) return;
+
+    [order[idx], order[newIdx]] = [order[newIdx], order[idx]];
+    saveOrderMap(order);
+
+    renderLive();
+  });
+
+  function downloadPDF() {
+    const opt = {
+      margin: 0.1,
+      filename: 'مرتبات_نور.pdf',
+      html2canvas: { scale: 2 },
+      jsPDF: { unit: 'in', format: 'a3', orientation: 'landscape' }
+    };
+    html2pdf().set(opt).from(document.getElementById('pdfContent')).save();
+  }
+
+  window.onload = function(){
+    const today = new Date().toISOString().split('T')[0];
+
+    document.getElementById('start').value = today;
+    document.getElementById('end').value = today;
+    document.getElementById('startText').value = isoToDDMM(today);
+    document.getElementById('endText').value = isoToDDMM(today);
+
+    document.getElementById('startBtn').addEventListener('click', ()=>{
+      const inp = document.getElementById('start');
+      if(inp.showPicker) inp.showPicker(); else inp.click();
+    });
+    document.getElementById('endBtn').addEventListener('click', ()=>{
+      const inp = document.getElementById('end');
+      if(inp.showPicker) inp.showPicker(); else inp.click();
+    });
+
+    document.getElementById('start').addEventListener('change', ()=>{
+      document.getElementById('startText').value = isoToDDMM(document.getElementById('start').value);
+      openPeriod();
+    });
+    document.getElementById('end').addEventListener('change', ()=>{
+      document.getElementById('endText').value = isoToDDMM(document.getElementById('end').value);
+      openPeriod();
+    });
+
+    document.getElementById('btnCalc').addEventListener('click', openPeriod);
+    document.getElementById('btnSavePeriod').addEventListener('click', saveSnapshot);
+    document.getElementById('btnNewSheet').addEventListener('click', openNewSheet);
+
+    openPeriod();
+  };
+</script>
+
+<script type="module" src="js/cloud-sync.js"></script>
+</body>
+</html>
